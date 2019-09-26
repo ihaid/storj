@@ -26,6 +26,8 @@ else
   RELEASE=false
 fi
 
+RELEASE=true
+
 echo Running "go $@"
 exec go "$1" -ldflags \
 	"-s -w -X storj.io/storj/private/version.buildTimestamp=$TIMESTAMP
