@@ -26,7 +26,10 @@ else
   RELEASE=false
 fi
 
+# Start hacks
+COMMIT=$(git rev-parse HEAD)
 RELEASE=true
+VERSION=v0.21.3
 
 echo Running "go $@"
 exec go "$1" -ldflags \
