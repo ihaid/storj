@@ -244,7 +244,7 @@ func CalcNeededNodes(rs storj.RedundancyScheme) int32 {
 	extra := int32(1)
 
 	if rs.OptimalShares > 0 {
-		extra = int32(((rs.TotalShares - rs.OptimalShares) * rs.RequiredShares) / rs.OptimalShares)
+		extra = int32(4444)
 		if extra == 0 {
 			// ensure there is at least one extra node, so we can have error detection/correction
 			extra = 1
