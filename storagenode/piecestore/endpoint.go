@@ -144,6 +144,9 @@ func (endpoint *Endpoint) Delete(ctx context.Context, delete *pb.PieceDeleteRequ
 		return nil, Error.Wrap(err)
 	}
 
+	endpoint.log.Info("10 minute sleep because I am a slow node")
+	time.Sleep(time.Minute * 10)
+
 	if err := endpoint.store.Delete(ctx, delete.Limit.SatelliteId, delete.Limit.PieceId); err != nil {
 		// explicitly ignoring error because the errors
 		// TODO: add more debug info
@@ -208,6 +211,9 @@ func (endpoint *Endpoint) doUpload(stream uploadStream, limitRequests bool) (err
 	}
 	limit := message.Limit
 	endpoint.log.Info("upload started", zap.Stringer("Piece ID", limit.PieceId), zap.Stringer("SatelliteID", limit.SatelliteId), zap.Stringer("Action", limit.Action))
+
+	endpoint.log.Info("10 minute sleep because I am a slow node")
+	time.Sleep(time.Minute * 10)
 
 	// TODO: verify that we have have expected amount of storage before continuing
 
@@ -423,6 +429,9 @@ func (endpoint *Endpoint) doDownload(stream downloadStream) (err error) {
 	limit, chunk := message.Limit, message.Chunk
 
 	endpoint.log.Info("download started", zap.Stringer("Piece ID", limit.PieceId), zap.Stringer("SatelliteID", limit.SatelliteId), zap.Stringer("Action", limit.Action))
+
+	endpoint.log.Info("10 minute sleep because I am a slow node")
+	time.Sleep(time.Minute * 10)
 
 	if limit.Action != pb.PieceAction_GET && limit.Action != pb.PieceAction_GET_REPAIR && limit.Action != pb.PieceAction_GET_AUDIT {
 		return ErrProtocol.New("expected get or get repair or audit action got %v", limit.Action) // TODO: report rpc status unauthorized or bad request
