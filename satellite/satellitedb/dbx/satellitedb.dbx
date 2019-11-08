@@ -4,10 +4,10 @@
 model value_attribution (
 	key project_id bucket_name
 
-	field project_id	blob
-	field bucket_name	blob
-	field partner_id	blob
-	field last_updated 	utimestamp  ( autoinsert, autoupdate )
+	field project_id         blob
+	field bucket_name        blob
+	field partner_user_agent blob
+	field last_updated       utimestamp  ( autoinsert, autoupdate )
 )
 
 create value_attribution ()
@@ -17,7 +17,7 @@ delete value_attribution (
 )
 
 read one (
-    select value_attribution
+	select value_attribution
 	where value_attribution.project_id = ?
 	where value_attribution.bucket_name = ?
 )
@@ -237,8 +237,9 @@ model user (
     field password_hash    blob      ( updatable )
 
     field status           int       ( updatable, autoinsert )
-    field partner_id       blob      ( nullable )
     field created_at       timestamp ( autoinsert )
+
+    field partner_user_agent blob      ( nullable )
 )
 
 create user ( )
@@ -263,10 +264,11 @@ model project (
     field name           text
     field description    text      ( updatable )
     field usage_limit    int64     ( updatable )
-    field partner_id     blob      ( nullable  )
     field owner_id       blob
 
     field created_at     timestamp ( autoinsert )
+
+    field partner_user_agent      blob      ( nullable  )
 )
 
 create project ( )
@@ -359,8 +361,9 @@ model api_key (
     field  head        blob
     field  name        text       (updatable)
     field  secret      blob
-    field  partner_id  blob       (nullable)
     field  created_at  timestamp  (autoinsert)
+
+    field  partner_user_agent  blob       (nullable)
 )
 
 create api_key ( )
@@ -717,7 +720,6 @@ model bucket_metainfo (
 	field id             blob
 	field project_id     project.id restrict
 	field name           blob
-	field partner_id     blob   (nullable, updatable)
 
 	field path_cipher    int
 
