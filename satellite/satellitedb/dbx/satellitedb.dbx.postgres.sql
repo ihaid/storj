@@ -162,10 +162,10 @@ CREATE TABLE projects (
 	name text NOT NULL,
 	description text NOT NULL,
 	usage_limit bigint NOT NULL,
-	partner_id bytea,
-	user_agent bytea NOT NULL,
 	owner_id bytea NOT NULL,
 	created_at timestamp with time zone NOT NULL,
+	partner_id bytea,
+	user_agent bytea NOT NULL,
 	PRIMARY KEY ( id )
 );
 CREATE TABLE registration_tokens (

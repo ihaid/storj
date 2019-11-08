@@ -26,10 +26,12 @@ type Bucket struct {
 	ID                          uuid.UUID
 	Name                        string
 	ProjectID                   uuid.UUID
-	PartnerID                   uuid.UUID
 	Created                     time.Time
 	PathCipher                  CipherSuite
 	DefaultSegmentsSize         int64
 	DefaultRedundancyScheme     RedundancyScheme
 	DefaultEncryptionParameters EncryptionParameters
+
+	PartnerID uuid.UUID
+	UserAgent string
 }

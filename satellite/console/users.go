@@ -51,6 +51,7 @@ type CreateUser struct {
 	ShortName string `json:"shortName"`
 	Email     string `json:"email"`
 	PartnerID string `json:"partnerId"`
+	UserAgent string `json:"userAgent"`
 	Password  string `json:"password"`
 }
 
@@ -97,8 +98,10 @@ type User struct {
 	Email        string `json:"email"`
 	PasswordHash []byte `json:"passwordHash"`
 
-	Status    UserStatus `json:"status"`
-	PartnerID uuid.UUID  `json:"partnerId"`
+	Status UserStatus `json:"status"`
 
 	CreatedAt time.Time `json:"createdAt"`
+
+	PartnerID uuid.UUID `json:"partnerId"`
+	UserAgent string    `json:"userAgent"`
 }

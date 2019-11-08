@@ -66,6 +66,7 @@ func (users *users) Insert(ctx context.Context, user *console.User) (_ *console.
 		dbx.User_NormalizedEmail(normalizeEmail(user.Email)),
 		dbx.User_FullName(user.FullName),
 		dbx.User_PasswordHash(user.PasswordHash),
+		dbx.User_UserAgent([]byte(user.UserAgent)),
 		optional,
 	)
 
@@ -134,6 +135,7 @@ func userFromDBX(ctx context.Context, user *dbx.User) (_ *console.User, err erro
 		PasswordHash: user.PasswordHash,
 		Status:       console.UserStatus(user.Status),
 		CreatedAt:    user.CreatedAt,
+		UserAgent:    string(user.UserAgent),
 	}
 
 	if user.PartnerId != nil {

@@ -34,10 +34,12 @@ type APIKeys interface {
 type APIKeyInfo struct {
 	ID        uuid.UUID `json:"id"`
 	ProjectID uuid.UUID `json:"projectId"`
-	PartnerID uuid.UUID `json:"partnerId"`
 	Name      string    `json:"name"`
 	Secret    []byte    `json:"-"`
 	CreatedAt time.Time `json:"createdAt"`
+
+	PartnerID uuid.UUID `json:"partnerId"`
+	UserAgent string    `json:"userAgent"`
 }
 
 // APIKeyCursor holds info for api keys cursor pagination

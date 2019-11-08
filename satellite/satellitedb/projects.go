@@ -89,6 +89,7 @@ func (projects *projects) Insert(ctx context.Context, project *console.Project) 
 		dbx.Project_Description(project.Description),
 		dbx.Project_UsageLimit(0),
 		dbx.Project_OwnerId(project.OwnerID[:]),
+		dbx.Project_UserAgent([]byte(project.UserAgent)),
 		createFields,
 	)
 
@@ -185,9 +186,11 @@ func projectFromDBX(ctx context.Context, project *dbx.Project) (_ *console.Proje
 		ID:          id,
 		Name:        project.Name,
 		Description: project.Description,
-		PartnerID:   partnerID,
 		OwnerID:     ownerID,
 		CreatedAt:   project.CreatedAt,
+
+		PartnerID: partnerID,
+		UserAgent: string(project.UserAgent),
 	}, nil
 }
 

@@ -39,10 +39,12 @@ type Project struct {
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
 	UsageLimit  int64     `json:"usageLimit"`
-	PartnerID   uuid.UUID `json:"partnerId"`
 	OwnerID     uuid.UUID `json:"ownerId"`
 
 	CreatedAt time.Time `json:"createdAt"`
+
+	PartnerID uuid.UUID `json:"partnerId"`
+	UserAgent string    `json:"userAgent"`
 }
 
 // ProjectInfo holds data needed to create/update Project

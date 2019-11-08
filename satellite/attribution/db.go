@@ -20,6 +20,7 @@ type Info struct {
 	ProjectID  uuid.UUID
 	BucketName []byte
 	PartnerID  uuid.UUID
+	UserAgent  string
 	CreatedAt  time.Time
 }
 
@@ -42,5 +43,5 @@ type DB interface {
 	// Insert creates and stores new Info
 	Insert(ctx context.Context, info *Info) (*Info, error)
 	// QueryAttribution queries partner bucket attribution data
-	QueryAttribution(ctx context.Context, partnerID uuid.UUID, start time.Time, end time.Time) ([]*CSVRow, error)
+	QueryAttribution(ctx context.Context, partnerID uuid.UUID, userAgent string, start time.Time, end time.Time) ([]*CSVRow, error)
 }

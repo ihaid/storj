@@ -235,6 +235,8 @@ func fromDBXAPIKey(ctx context.Context, key *dbx.ApiKey) (_ *console.APIKeyInfo,
 		Name:      key.Name,
 		CreatedAt: key.CreatedAt,
 		Secret:    key.Secret,
+
+		UserAgent: string(key.UserAgent),
 	}
 
 	if key.PartnerId != nil {
