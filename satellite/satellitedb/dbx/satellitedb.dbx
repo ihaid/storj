@@ -6,7 +6,8 @@ model value_attribution (
 
 	field project_id	blob
 	field bucket_name	blob
-	field partner_id	blob
+	field partner_id	blob // deprecated, use user_agent
+	field user_agent	blob ( updatable )
 	field last_updated 	utimestamp  ( autoinsert, autoupdate )
 )
 
@@ -237,7 +238,8 @@ model user (
     field password_hash    blob      ( updatable )
 
     field status           int       ( updatable, autoinsert )
-    field partner_id       blob      ( nullable )
+    field partner_id       blob      ( nullable ) // deprecated, use user_agent
+	field user_agent	   blob      ( updatable )
     field created_at       timestamp ( autoinsert )
 )
 
@@ -263,7 +265,8 @@ model project (
     field name           text
     field description    text      ( updatable )
     field usage_limit    int64     ( updatable )
-    field partner_id     blob      ( nullable  )
+    field partner_id     blob      ( nullable, updatable ) // deprecated, use user_agent
+    field user_agent     blob      ( updatable )
     field owner_id       blob
 
     field created_at     timestamp ( autoinsert )
@@ -359,7 +362,8 @@ model api_key (
     field  head        blob
     field  name        text       (updatable)
     field  secret      blob
-    field  partner_id  blob       (nullable)
+    field  partner_id  blob       (nullable) // deprecated, use user_agent
+    field  user_agent  blob       (updatable)
     field  created_at  timestamp  (autoinsert)
 )
 
@@ -717,7 +721,7 @@ model bucket_metainfo (
 	field id             blob
 	field project_id     project.id restrict
 	field name           blob
-	field partner_id     blob   (nullable, updatable)
+	field partner_id     blob   (nullable, updatable) // deprecated
 
 	field path_cipher    int
 
