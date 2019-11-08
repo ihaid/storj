@@ -163,6 +163,7 @@ CREATE TABLE projects (
 	description text NOT NULL,
 	usage_limit bigint NOT NULL,
 	partner_id bytea,
+	user_agent bytea NOT NULL,
 	owner_id bytea NOT NULL,
 	created_at timestamp with time zone NOT NULL,
 	PRIMARY KEY ( id )
@@ -234,6 +235,7 @@ CREATE TABLE users (
 	password_hash bytea NOT NULL,
 	status integer NOT NULL,
 	partner_id bytea,
+	user_agent bytea NOT NULL,
 	created_at timestamp with time zone NOT NULL,
 	PRIMARY KEY ( id )
 );
@@ -241,6 +243,7 @@ CREATE TABLE value_attributions (
 	project_id bytea NOT NULL,
 	bucket_name bytea NOT NULL,
 	partner_id bytea NOT NULL,
+	user_agent bytea NOT NULL,
 	last_updated timestamp NOT NULL,
 	PRIMARY KEY ( project_id, bucket_name )
 );
@@ -251,6 +254,7 @@ CREATE TABLE api_keys (
 	name text NOT NULL,
 	secret bytea NOT NULL,
 	partner_id bytea,
+	user_agent bytea NOT NULL,
 	created_at timestamp with time zone NOT NULL,
 	PRIMARY KEY ( id ),
 	UNIQUE ( head ),

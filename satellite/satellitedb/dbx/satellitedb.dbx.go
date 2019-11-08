@@ -428,6 +428,7 @@ CREATE TABLE projects (
 	description text NOT NULL,
 	usage_limit bigint NOT NULL,
 	partner_id bytea,
+	user_agent bytea NOT NULL,
 	owner_id bytea NOT NULL,
 	created_at timestamp with time zone NOT NULL,
 	PRIMARY KEY ( id )
@@ -499,6 +500,7 @@ CREATE TABLE users (
 	password_hash bytea NOT NULL,
 	status integer NOT NULL,
 	partner_id bytea,
+	user_agent bytea NOT NULL,
 	created_at timestamp with time zone NOT NULL,
 	PRIMARY KEY ( id )
 );
@@ -506,6 +508,7 @@ CREATE TABLE value_attributions (
 	project_id bytea NOT NULL,
 	bucket_name bytea NOT NULL,
 	partner_id bytea NOT NULL,
+	user_agent bytea NOT NULL,
 	last_updated timestamp NOT NULL,
 	PRIMARY KEY ( project_id, bucket_name )
 );
@@ -516,6 +519,7 @@ CREATE TABLE api_keys (
 	name text NOT NULL,
 	secret bytea NOT NULL,
 	partner_id bytea,
+	user_agent bytea NOT NULL,
 	created_at timestamp with time zone NOT NULL,
 	PRIMARY KEY ( id ),
 	UNIQUE ( head ),
@@ -3416,6 +3420,7 @@ type Project struct {
 	Description string
 	UsageLimit  int64
 	PartnerId   []byte
+	UserAgent   []byte
 	OwnerId     []byte
 	CreatedAt   time.Time
 }
@@ -3429,6 +3434,8 @@ type Project_Create_Fields struct {
 type Project_Update_Fields struct {
 	Description Project_Description_Field
 	UsageLimit  Project_UsageLimit_Field
+	PartnerId   Project_PartnerId_Field
+	UserAgent   Project_UserAgent_Field
 }
 
 type Project_Id_Field struct {
@@ -3538,6 +3545,25 @@ func (f Project_PartnerId_Field) value() interface{} {
 }
 
 func (Project_PartnerId_Field) _Column() string { return "partner_id" }
+
+type Project_UserAgent_Field struct {
+	_set   bool
+	_null  bool
+	_value []byte
+}
+
+func Project_UserAgent(v []byte) Project_UserAgent_Field {
+	return Project_UserAgent_Field{_set: true, _value: v}
+}
+
+func (f Project_UserAgent_Field) value() interface{} {
+	if !f._set || f._null {
+		return nil
+	}
+	return f._value
+}
+
+func (Project_UserAgent_Field) _Column() string { return "user_agent" }
 
 type Project_OwnerId_Field struct {
 	_set   bool
@@ -4330,6 +4356,7 @@ type User struct {
 	PasswordHash    []byte
 	Status          int
 	PartnerId       []byte
+	UserAgent       []byte
 	CreatedAt       time.Time
 }
 
@@ -4347,6 +4374,7 @@ type User_Update_Fields struct {
 	ShortName       User_ShortName_Field
 	PasswordHash    User_PasswordHash_Field
 	Status          User_Status_Field
+	UserAgent       User_UserAgent_Field
 }
 
 type User_Id_Field struct {
@@ -4527,6 +4555,25 @@ func (f User_PartnerId_Field) value() interface{} {
 
 func (User_PartnerId_Field) _Column() string { return "partner_id" }
 
+type User_UserAgent_Field struct {
+	_set   bool
+	_null  bool
+	_value []byte
+}
+
+func User_UserAgent(v []byte) User_UserAgent_Field {
+	return User_UserAgent_Field{_set: true, _value: v}
+}
+
+func (f User_UserAgent_Field) value() interface{} {
+	if !f._set || f._null {
+		return nil
+	}
+	return f._value
+}
+
+func (User_UserAgent_Field) _Column() string { return "user_agent" }
+
 type User_CreatedAt_Field struct {
 	_set   bool
 	_null  bool
@@ -4550,12 +4597,14 @@ type ValueAttribution struct {
 	ProjectId   []byte
 	BucketName  []byte
 	PartnerId   []byte
+	UserAgent   []byte
 	LastUpdated time.Time
 }
 
 func (ValueAttribution) _Table() string { return "value_attributions" }
 
 type ValueAttribution_Update_Fields struct {
+	UserAgent ValueAttribution_UserAgent_Field
 }
 
 type ValueAttribution_ProjectId_Field struct {
@@ -4615,6 +4664,25 @@ func (f ValueAttribution_PartnerId_Field) value() interface{} {
 
 func (ValueAttribution_PartnerId_Field) _Column() string { return "partner_id" }
 
+type ValueAttribution_UserAgent_Field struct {
+	_set   bool
+	_null  bool
+	_value []byte
+}
+
+func ValueAttribution_UserAgent(v []byte) ValueAttribution_UserAgent_Field {
+	return ValueAttribution_UserAgent_Field{_set: true, _value: v}
+}
+
+func (f ValueAttribution_UserAgent_Field) value() interface{} {
+	if !f._set || f._null {
+		return nil
+	}
+	return f._value
+}
+
+func (ValueAttribution_UserAgent_Field) _Column() string { return "user_agent" }
+
 type ValueAttribution_LastUpdated_Field struct {
 	_set   bool
 	_null  bool
@@ -4642,6 +4710,7 @@ type ApiKey struct {
 	Name      string
 	Secret    []byte
 	PartnerId []byte
+	UserAgent []byte
 	CreatedAt time.Time
 }
 
@@ -4652,7 +4721,8 @@ type ApiKey_Create_Fields struct {
 }
 
 type ApiKey_Update_Fields struct {
-	Name ApiKey_Name_Field
+	Name      ApiKey_Name_Field
+	UserAgent ApiKey_UserAgent_Field
 }
 
 type ApiKey_Id_Field struct {
@@ -4781,6 +4851,25 @@ func (f ApiKey_PartnerId_Field) value() interface{} {
 }
 
 func (ApiKey_PartnerId_Field) _Column() string { return "partner_id" }
+
+type ApiKey_UserAgent_Field struct {
+	_set   bool
+	_null  bool
+	_value []byte
+}
+
+func ApiKey_UserAgent(v []byte) ApiKey_UserAgent_Field {
+	return ApiKey_UserAgent_Field{_set: true, _value: v}
+}
+
+func (f ApiKey_UserAgent_Field) value() interface{} {
+	if !f._set || f._null {
+		return nil
+	}
+	return f._value
+}
+
+func (ApiKey_UserAgent_Field) _Column() string { return "user_agent" }
 
 type ApiKey_CreatedAt_Field struct {
 	_set   bool
@@ -5899,22 +5988,24 @@ type Value_Row struct {
 func (obj *postgresImpl) Create_ValueAttribution(ctx context.Context,
 	value_attribution_project_id ValueAttribution_ProjectId_Field,
 	value_attribution_bucket_name ValueAttribution_BucketName_Field,
-	value_attribution_partner_id ValueAttribution_PartnerId_Field) (
+	value_attribution_partner_id ValueAttribution_PartnerId_Field,
+	value_attribution_user_agent ValueAttribution_UserAgent_Field) (
 	value_attribution *ValueAttribution, err error) {
 
 	__now := obj.db.Hooks.Now().UTC()
 	__project_id_val := value_attribution_project_id.value()
 	__bucket_name_val := value_attribution_bucket_name.value()
 	__partner_id_val := value_attribution_partner_id.value()
+	__user_agent_val := value_attribution_user_agent.value()
 	__last_updated_val := __now.UTC()
 
-	var __embed_stmt = __sqlbundle_Literal("INSERT INTO value_attributions ( project_id, bucket_name, partner_id, last_updated ) VALUES ( ?, ?, ?, ? ) RETURNING value_attributions.project_id, value_attributions.bucket_name, value_attributions.partner_id, value_attributions.last_updated")
+	var __embed_stmt = __sqlbundle_Literal("INSERT INTO value_attributions ( project_id, bucket_name, partner_id, user_agent, last_updated ) VALUES ( ?, ?, ?, ?, ? ) RETURNING value_attributions.project_id, value_attributions.bucket_name, value_attributions.partner_id, value_attributions.user_agent, value_attributions.last_updated")
 
 	var __stmt = __sqlbundle_Render(obj.dialect, __embed_stmt)
-	obj.logStmt(__stmt, __project_id_val, __bucket_name_val, __partner_id_val, __last_updated_val)
+	obj.logStmt(__stmt, __project_id_val, __bucket_name_val, __partner_id_val, __user_agent_val, __last_updated_val)
 
 	value_attribution = &ValueAttribution{}
-	err = obj.driver.QueryRow(__stmt, __project_id_val, __bucket_name_val, __partner_id_val, __last_updated_val).Scan(&value_attribution.ProjectId, &value_attribution.BucketName, &value_attribution.PartnerId, &value_attribution.LastUpdated)
+	err = obj.driver.QueryRow(__stmt, __project_id_val, __bucket_name_val, __partner_id_val, __user_agent_val, __last_updated_val).Scan(&value_attribution.ProjectId, &value_attribution.BucketName, &value_attribution.PartnerId, &value_attribution.UserAgent, &value_attribution.LastUpdated)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
@@ -6119,6 +6210,7 @@ func (obj *postgresImpl) Create_User(ctx context.Context,
 	user_normalized_email User_NormalizedEmail_Field,
 	user_full_name User_FullName_Field,
 	user_password_hash User_PasswordHash_Field,
+	user_user_agent User_UserAgent_Field,
 	optional User_Create_Fields) (
 	user *User, err error) {
 
@@ -6131,15 +6223,16 @@ func (obj *postgresImpl) Create_User(ctx context.Context,
 	__password_hash_val := user_password_hash.value()
 	__status_val := int(0)
 	__partner_id_val := optional.PartnerId.value()
+	__user_agent_val := user_user_agent.value()
 	__created_at_val := __now
 
-	var __embed_stmt = __sqlbundle_Literal("INSERT INTO users ( id, email, normalized_email, full_name, short_name, password_hash, status, partner_id, created_at ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ? ) RETURNING users.id, users.email, users.normalized_email, users.full_name, users.short_name, users.password_hash, users.status, users.partner_id, users.created_at")
+	var __embed_stmt = __sqlbundle_Literal("INSERT INTO users ( id, email, normalized_email, full_name, short_name, password_hash, status, partner_id, user_agent, created_at ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ) RETURNING users.id, users.email, users.normalized_email, users.full_name, users.short_name, users.password_hash, users.status, users.partner_id, users.user_agent, users.created_at")
 
 	var __stmt = __sqlbundle_Render(obj.dialect, __embed_stmt)
-	obj.logStmt(__stmt, __id_val, __email_val, __normalized_email_val, __full_name_val, __short_name_val, __password_hash_val, __status_val, __partner_id_val, __created_at_val)
+	obj.logStmt(__stmt, __id_val, __email_val, __normalized_email_val, __full_name_val, __short_name_val, __password_hash_val, __status_val, __partner_id_val, __user_agent_val, __created_at_val)
 
 	user = &User{}
-	err = obj.driver.QueryRow(__stmt, __id_val, __email_val, __normalized_email_val, __full_name_val, __short_name_val, __password_hash_val, __status_val, __partner_id_val, __created_at_val).Scan(&user.Id, &user.Email, &user.NormalizedEmail, &user.FullName, &user.ShortName, &user.PasswordHash, &user.Status, &user.PartnerId, &user.CreatedAt)
+	err = obj.driver.QueryRow(__stmt, __id_val, __email_val, __normalized_email_val, __full_name_val, __short_name_val, __password_hash_val, __status_val, __partner_id_val, __user_agent_val, __created_at_val).Scan(&user.Id, &user.Email, &user.NormalizedEmail, &user.FullName, &user.ShortName, &user.PasswordHash, &user.Status, &user.PartnerId, &user.UserAgent, &user.CreatedAt)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
@@ -6152,6 +6245,7 @@ func (obj *postgresImpl) Create_Project(ctx context.Context,
 	project_name Project_Name_Field,
 	project_description Project_Description_Field,
 	project_usage_limit Project_UsageLimit_Field,
+	project_user_agent Project_UserAgent_Field,
 	project_owner_id Project_OwnerId_Field,
 	optional Project_Create_Fields) (
 	project *Project, err error) {
@@ -6162,16 +6256,17 @@ func (obj *postgresImpl) Create_Project(ctx context.Context,
 	__description_val := project_description.value()
 	__usage_limit_val := project_usage_limit.value()
 	__partner_id_val := optional.PartnerId.value()
+	__user_agent_val := project_user_agent.value()
 	__owner_id_val := project_owner_id.value()
 	__created_at_val := __now
 
-	var __embed_stmt = __sqlbundle_Literal("INSERT INTO projects ( id, name, description, usage_limit, partner_id, owner_id, created_at ) VALUES ( ?, ?, ?, ?, ?, ?, ? ) RETURNING projects.id, projects.name, projects.description, projects.usage_limit, projects.partner_id, projects.owner_id, projects.created_at")
+	var __embed_stmt = __sqlbundle_Literal("INSERT INTO projects ( id, name, description, usage_limit, partner_id, user_agent, owner_id, created_at ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? ) RETURNING projects.id, projects.name, projects.description, projects.usage_limit, projects.partner_id, projects.user_agent, projects.owner_id, projects.created_at")
 
 	var __stmt = __sqlbundle_Render(obj.dialect, __embed_stmt)
-	obj.logStmt(__stmt, __id_val, __name_val, __description_val, __usage_limit_val, __partner_id_val, __owner_id_val, __created_at_val)
+	obj.logStmt(__stmt, __id_val, __name_val, __description_val, __usage_limit_val, __partner_id_val, __user_agent_val, __owner_id_val, __created_at_val)
 
 	project = &Project{}
-	err = obj.driver.QueryRow(__stmt, __id_val, __name_val, __description_val, __usage_limit_val, __partner_id_val, __owner_id_val, __created_at_val).Scan(&project.Id, &project.Name, &project.Description, &project.UsageLimit, &project.PartnerId, &project.OwnerId, &project.CreatedAt)
+	err = obj.driver.QueryRow(__stmt, __id_val, __name_val, __description_val, __usage_limit_val, __partner_id_val, __user_agent_val, __owner_id_val, __created_at_val).Scan(&project.Id, &project.Name, &project.Description, &project.UsageLimit, &project.PartnerId, &project.UserAgent, &project.OwnerId, &project.CreatedAt)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
@@ -6236,6 +6331,7 @@ func (obj *postgresImpl) Create_ApiKey(ctx context.Context,
 	api_key_head ApiKey_Head_Field,
 	api_key_name ApiKey_Name_Field,
 	api_key_secret ApiKey_Secret_Field,
+	api_key_user_agent ApiKey_UserAgent_Field,
 	optional ApiKey_Create_Fields) (
 	api_key *ApiKey, err error) {
 
@@ -6246,15 +6342,16 @@ func (obj *postgresImpl) Create_ApiKey(ctx context.Context,
 	__name_val := api_key_name.value()
 	__secret_val := api_key_secret.value()
 	__partner_id_val := optional.PartnerId.value()
+	__user_agent_val := api_key_user_agent.value()
 	__created_at_val := __now
 
-	var __embed_stmt = __sqlbundle_Literal("INSERT INTO api_keys ( id, project_id, head, name, secret, partner_id, created_at ) VALUES ( ?, ?, ?, ?, ?, ?, ? ) RETURNING api_keys.id, api_keys.project_id, api_keys.head, api_keys.name, api_keys.secret, api_keys.partner_id, api_keys.created_at")
+	var __embed_stmt = __sqlbundle_Literal("INSERT INTO api_keys ( id, project_id, head, name, secret, partner_id, user_agent, created_at ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? ) RETURNING api_keys.id, api_keys.project_id, api_keys.head, api_keys.name, api_keys.secret, api_keys.partner_id, api_keys.user_agent, api_keys.created_at")
 
 	var __stmt = __sqlbundle_Render(obj.dialect, __embed_stmt)
-	obj.logStmt(__stmt, __id_val, __project_id_val, __head_val, __name_val, __secret_val, __partner_id_val, __created_at_val)
+	obj.logStmt(__stmt, __id_val, __project_id_val, __head_val, __name_val, __secret_val, __partner_id_val, __user_agent_val, __created_at_val)
 
 	api_key = &ApiKey{}
-	err = obj.driver.QueryRow(__stmt, __id_val, __project_id_val, __head_val, __name_val, __secret_val, __partner_id_val, __created_at_val).Scan(&api_key.Id, &api_key.ProjectId, &api_key.Head, &api_key.Name, &api_key.Secret, &api_key.PartnerId, &api_key.CreatedAt)
+	err = obj.driver.QueryRow(__stmt, __id_val, __project_id_val, __head_val, __name_val, __secret_val, __partner_id_val, __user_agent_val, __created_at_val).Scan(&api_key.Id, &api_key.ProjectId, &api_key.Head, &api_key.Name, &api_key.Secret, &api_key.PartnerId, &api_key.UserAgent, &api_key.CreatedAt)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
@@ -6736,7 +6833,7 @@ func (obj *postgresImpl) Get_ValueAttribution_By_ProjectId_And_BucketName(ctx co
 	value_attribution_bucket_name ValueAttribution_BucketName_Field) (
 	value_attribution *ValueAttribution, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT value_attributions.project_id, value_attributions.bucket_name, value_attributions.partner_id, value_attributions.last_updated FROM value_attributions WHERE value_attributions.project_id = ? AND value_attributions.bucket_name = ?")
+	var __embed_stmt = __sqlbundle_Literal("SELECT value_attributions.project_id, value_attributions.bucket_name, value_attributions.partner_id, value_attributions.user_agent, value_attributions.last_updated FROM value_attributions WHERE value_attributions.project_id = ? AND value_attributions.bucket_name = ?")
 
 	var __values []interface{}
 	__values = append(__values, value_attribution_project_id.value(), value_attribution_bucket_name.value())
@@ -6745,7 +6842,7 @@ func (obj *postgresImpl) Get_ValueAttribution_By_ProjectId_And_BucketName(ctx co
 	obj.logStmt(__stmt, __values...)
 
 	value_attribution = &ValueAttribution{}
-	err = obj.driver.QueryRow(__stmt, __values...).Scan(&value_attribution.ProjectId, &value_attribution.BucketName, &value_attribution.PartnerId, &value_attribution.LastUpdated)
+	err = obj.driver.QueryRow(__stmt, __values...).Scan(&value_attribution.ProjectId, &value_attribution.BucketName, &value_attribution.PartnerId, &value_attribution.UserAgent, &value_attribution.LastUpdated)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
@@ -7070,7 +7167,7 @@ func (obj *postgresImpl) Get_User_By_NormalizedEmail_And_Status_Not_Number(ctx c
 	user_normalized_email User_NormalizedEmail_Field) (
 	user *User, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT users.id, users.email, users.normalized_email, users.full_name, users.short_name, users.password_hash, users.status, users.partner_id, users.created_at FROM users WHERE users.normalized_email = ? AND users.status != 0 LIMIT 2")
+	var __embed_stmt = __sqlbundle_Literal("SELECT users.id, users.email, users.normalized_email, users.full_name, users.short_name, users.password_hash, users.status, users.partner_id, users.user_agent, users.created_at FROM users WHERE users.normalized_email = ? AND users.status != 0 LIMIT 2")
 
 	var __values []interface{}
 	__values = append(__values, user_normalized_email.value())
@@ -7092,7 +7189,7 @@ func (obj *postgresImpl) Get_User_By_NormalizedEmail_And_Status_Not_Number(ctx c
 	}
 
 	user = &User{}
-	err = __rows.Scan(&user.Id, &user.Email, &user.NormalizedEmail, &user.FullName, &user.ShortName, &user.PasswordHash, &user.Status, &user.PartnerId, &user.CreatedAt)
+	err = __rows.Scan(&user.Id, &user.Email, &user.NormalizedEmail, &user.FullName, &user.ShortName, &user.PasswordHash, &user.Status, &user.PartnerId, &user.UserAgent, &user.CreatedAt)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
@@ -7113,7 +7210,7 @@ func (obj *postgresImpl) Get_User_By_Id(ctx context.Context,
 	user_id User_Id_Field) (
 	user *User, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT users.id, users.email, users.normalized_email, users.full_name, users.short_name, users.password_hash, users.status, users.partner_id, users.created_at FROM users WHERE users.id = ?")
+	var __embed_stmt = __sqlbundle_Literal("SELECT users.id, users.email, users.normalized_email, users.full_name, users.short_name, users.password_hash, users.status, users.partner_id, users.user_agent, users.created_at FROM users WHERE users.id = ?")
 
 	var __values []interface{}
 	__values = append(__values, user_id.value())
@@ -7122,7 +7219,7 @@ func (obj *postgresImpl) Get_User_By_Id(ctx context.Context,
 	obj.logStmt(__stmt, __values...)
 
 	user = &User{}
-	err = obj.driver.QueryRow(__stmt, __values...).Scan(&user.Id, &user.Email, &user.NormalizedEmail, &user.FullName, &user.ShortName, &user.PasswordHash, &user.Status, &user.PartnerId, &user.CreatedAt)
+	err = obj.driver.QueryRow(__stmt, __values...).Scan(&user.Id, &user.Email, &user.NormalizedEmail, &user.FullName, &user.ShortName, &user.PasswordHash, &user.Status, &user.PartnerId, &user.UserAgent, &user.CreatedAt)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
@@ -7134,7 +7231,7 @@ func (obj *postgresImpl) Get_Project_By_Id(ctx context.Context,
 	project_id Project_Id_Field) (
 	project *Project, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT projects.id, projects.name, projects.description, projects.usage_limit, projects.partner_id, projects.owner_id, projects.created_at FROM projects WHERE projects.id = ?")
+	var __embed_stmt = __sqlbundle_Literal("SELECT projects.id, projects.name, projects.description, projects.usage_limit, projects.partner_id, projects.user_agent, projects.owner_id, projects.created_at FROM projects WHERE projects.id = ?")
 
 	var __values []interface{}
 	__values = append(__values, project_id.value())
@@ -7143,7 +7240,7 @@ func (obj *postgresImpl) Get_Project_By_Id(ctx context.Context,
 	obj.logStmt(__stmt, __values...)
 
 	project = &Project{}
-	err = obj.driver.QueryRow(__stmt, __values...).Scan(&project.Id, &project.Name, &project.Description, &project.UsageLimit, &project.PartnerId, &project.OwnerId, &project.CreatedAt)
+	err = obj.driver.QueryRow(__stmt, __values...).Scan(&project.Id, &project.Name, &project.Description, &project.UsageLimit, &project.PartnerId, &project.UserAgent, &project.OwnerId, &project.CreatedAt)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
@@ -7154,7 +7251,7 @@ func (obj *postgresImpl) Get_Project_By_Id(ctx context.Context,
 func (obj *postgresImpl) All_Project(ctx context.Context) (
 	rows []*Project, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT projects.id, projects.name, projects.description, projects.usage_limit, projects.partner_id, projects.owner_id, projects.created_at FROM projects")
+	var __embed_stmt = __sqlbundle_Literal("SELECT projects.id, projects.name, projects.description, projects.usage_limit, projects.partner_id, projects.user_agent, projects.owner_id, projects.created_at FROM projects")
 
 	var __values []interface{}
 	__values = append(__values)
@@ -7170,7 +7267,7 @@ func (obj *postgresImpl) All_Project(ctx context.Context) (
 
 	for __rows.Next() {
 		project := &Project{}
-		err = __rows.Scan(&project.Id, &project.Name, &project.Description, &project.UsageLimit, &project.PartnerId, &project.OwnerId, &project.CreatedAt)
+		err = __rows.Scan(&project.Id, &project.Name, &project.Description, &project.UsageLimit, &project.PartnerId, &project.UserAgent, &project.OwnerId, &project.CreatedAt)
 		if err != nil {
 			return nil, obj.makeErr(err)
 		}
@@ -7187,7 +7284,7 @@ func (obj *postgresImpl) All_Project_By_CreatedAt_Less_OrderBy_Asc_CreatedAt(ctx
 	project_created_at_less Project_CreatedAt_Field) (
 	rows []*Project, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT projects.id, projects.name, projects.description, projects.usage_limit, projects.partner_id, projects.owner_id, projects.created_at FROM projects WHERE projects.created_at < ? ORDER BY projects.created_at")
+	var __embed_stmt = __sqlbundle_Literal("SELECT projects.id, projects.name, projects.description, projects.usage_limit, projects.partner_id, projects.user_agent, projects.owner_id, projects.created_at FROM projects WHERE projects.created_at < ? ORDER BY projects.created_at")
 
 	var __values []interface{}
 	__values = append(__values, project_created_at_less.value())
@@ -7203,7 +7300,7 @@ func (obj *postgresImpl) All_Project_By_CreatedAt_Less_OrderBy_Asc_CreatedAt(ctx
 
 	for __rows.Next() {
 		project := &Project{}
-		err = __rows.Scan(&project.Id, &project.Name, &project.Description, &project.UsageLimit, &project.PartnerId, &project.OwnerId, &project.CreatedAt)
+		err = __rows.Scan(&project.Id, &project.Name, &project.Description, &project.UsageLimit, &project.PartnerId, &project.UserAgent, &project.OwnerId, &project.CreatedAt)
 		if err != nil {
 			return nil, obj.makeErr(err)
 		}
@@ -7220,7 +7317,7 @@ func (obj *postgresImpl) All_Project_By_ProjectMember_MemberId_OrderBy_Asc_Proje
 	project_member_member_id ProjectMember_MemberId_Field) (
 	rows []*Project, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT projects.id, projects.name, projects.description, projects.usage_limit, projects.partner_id, projects.owner_id, projects.created_at FROM projects  JOIN project_members ON projects.id = project_members.project_id WHERE project_members.member_id = ? ORDER BY projects.name")
+	var __embed_stmt = __sqlbundle_Literal("SELECT projects.id, projects.name, projects.description, projects.usage_limit, projects.partner_id, projects.user_agent, projects.owner_id, projects.created_at FROM projects  JOIN project_members ON projects.id = project_members.project_id WHERE project_members.member_id = ? ORDER BY projects.name")
 
 	var __values []interface{}
 	__values = append(__values, project_member_member_id.value())
@@ -7236,7 +7333,7 @@ func (obj *postgresImpl) All_Project_By_ProjectMember_MemberId_OrderBy_Asc_Proje
 
 	for __rows.Next() {
 		project := &Project{}
-		err = __rows.Scan(&project.Id, &project.Name, &project.Description, &project.UsageLimit, &project.PartnerId, &project.OwnerId, &project.CreatedAt)
+		err = __rows.Scan(&project.Id, &project.Name, &project.Description, &project.UsageLimit, &project.PartnerId, &project.UserAgent, &project.OwnerId, &project.CreatedAt)
 		if err != nil {
 			return nil, obj.makeErr(err)
 		}
@@ -7254,7 +7351,7 @@ func (obj *postgresImpl) Limited_Project_By_CreatedAt_Less_OrderBy_Asc_CreatedAt
 	limit int, offset int64) (
 	rows []*Project, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT projects.id, projects.name, projects.description, projects.usage_limit, projects.partner_id, projects.owner_id, projects.created_at FROM projects WHERE projects.created_at < ? ORDER BY projects.created_at LIMIT ? OFFSET ?")
+	var __embed_stmt = __sqlbundle_Literal("SELECT projects.id, projects.name, projects.description, projects.usage_limit, projects.partner_id, projects.user_agent, projects.owner_id, projects.created_at FROM projects WHERE projects.created_at < ? ORDER BY projects.created_at LIMIT ? OFFSET ?")
 
 	var __values []interface{}
 	__values = append(__values, project_created_at_less.value())
@@ -7272,7 +7369,7 @@ func (obj *postgresImpl) Limited_Project_By_CreatedAt_Less_OrderBy_Asc_CreatedAt
 
 	for __rows.Next() {
 		project := &Project{}
-		err = __rows.Scan(&project.Id, &project.Name, &project.Description, &project.UsageLimit, &project.PartnerId, &project.OwnerId, &project.CreatedAt)
+		err = __rows.Scan(&project.Id, &project.Name, &project.Description, &project.UsageLimit, &project.PartnerId, &project.UserAgent, &project.OwnerId, &project.CreatedAt)
 		if err != nil {
 			return nil, obj.makeErr(err)
 		}
@@ -7435,7 +7532,7 @@ func (obj *postgresImpl) Get_ApiKey_By_Id(ctx context.Context,
 	api_key_id ApiKey_Id_Field) (
 	api_key *ApiKey, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT api_keys.id, api_keys.project_id, api_keys.head, api_keys.name, api_keys.secret, api_keys.partner_id, api_keys.created_at FROM api_keys WHERE api_keys.id = ?")
+	var __embed_stmt = __sqlbundle_Literal("SELECT api_keys.id, api_keys.project_id, api_keys.head, api_keys.name, api_keys.secret, api_keys.partner_id, api_keys.user_agent, api_keys.created_at FROM api_keys WHERE api_keys.id = ?")
 
 	var __values []interface{}
 	__values = append(__values, api_key_id.value())
@@ -7444,7 +7541,7 @@ func (obj *postgresImpl) Get_ApiKey_By_Id(ctx context.Context,
 	obj.logStmt(__stmt, __values...)
 
 	api_key = &ApiKey{}
-	err = obj.driver.QueryRow(__stmt, __values...).Scan(&api_key.Id, &api_key.ProjectId, &api_key.Head, &api_key.Name, &api_key.Secret, &api_key.PartnerId, &api_key.CreatedAt)
+	err = obj.driver.QueryRow(__stmt, __values...).Scan(&api_key.Id, &api_key.ProjectId, &api_key.Head, &api_key.Name, &api_key.Secret, &api_key.PartnerId, &api_key.UserAgent, &api_key.CreatedAt)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
@@ -7456,7 +7553,7 @@ func (obj *postgresImpl) Get_ApiKey_By_Head(ctx context.Context,
 	api_key_head ApiKey_Head_Field) (
 	api_key *ApiKey, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT api_keys.id, api_keys.project_id, api_keys.head, api_keys.name, api_keys.secret, api_keys.partner_id, api_keys.created_at FROM api_keys WHERE api_keys.head = ?")
+	var __embed_stmt = __sqlbundle_Literal("SELECT api_keys.id, api_keys.project_id, api_keys.head, api_keys.name, api_keys.secret, api_keys.partner_id, api_keys.user_agent, api_keys.created_at FROM api_keys WHERE api_keys.head = ?")
 
 	var __values []interface{}
 	__values = append(__values, api_key_head.value())
@@ -7465,7 +7562,7 @@ func (obj *postgresImpl) Get_ApiKey_By_Head(ctx context.Context,
 	obj.logStmt(__stmt, __values...)
 
 	api_key = &ApiKey{}
-	err = obj.driver.QueryRow(__stmt, __values...).Scan(&api_key.Id, &api_key.ProjectId, &api_key.Head, &api_key.Name, &api_key.Secret, &api_key.PartnerId, &api_key.CreatedAt)
+	err = obj.driver.QueryRow(__stmt, __values...).Scan(&api_key.Id, &api_key.ProjectId, &api_key.Head, &api_key.Name, &api_key.Secret, &api_key.PartnerId, &api_key.UserAgent, &api_key.CreatedAt)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
@@ -7478,7 +7575,7 @@ func (obj *postgresImpl) Get_ApiKey_By_Name_And_ProjectId(ctx context.Context,
 	api_key_project_id ApiKey_ProjectId_Field) (
 	api_key *ApiKey, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT api_keys.id, api_keys.project_id, api_keys.head, api_keys.name, api_keys.secret, api_keys.partner_id, api_keys.created_at FROM api_keys WHERE api_keys.name = ? AND api_keys.project_id = ?")
+	var __embed_stmt = __sqlbundle_Literal("SELECT api_keys.id, api_keys.project_id, api_keys.head, api_keys.name, api_keys.secret, api_keys.partner_id, api_keys.user_agent, api_keys.created_at FROM api_keys WHERE api_keys.name = ? AND api_keys.project_id = ?")
 
 	var __values []interface{}
 	__values = append(__values, api_key_name.value(), api_key_project_id.value())
@@ -7487,7 +7584,7 @@ func (obj *postgresImpl) Get_ApiKey_By_Name_And_ProjectId(ctx context.Context,
 	obj.logStmt(__stmt, __values...)
 
 	api_key = &ApiKey{}
-	err = obj.driver.QueryRow(__stmt, __values...).Scan(&api_key.Id, &api_key.ProjectId, &api_key.Head, &api_key.Name, &api_key.Secret, &api_key.PartnerId, &api_key.CreatedAt)
+	err = obj.driver.QueryRow(__stmt, __values...).Scan(&api_key.Id, &api_key.ProjectId, &api_key.Head, &api_key.Name, &api_key.Secret, &api_key.PartnerId, &api_key.UserAgent, &api_key.CreatedAt)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
@@ -7499,7 +7596,7 @@ func (obj *postgresImpl) All_ApiKey_By_ProjectId_OrderBy_Asc_Name(ctx context.Co
 	api_key_project_id ApiKey_ProjectId_Field) (
 	rows []*ApiKey, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT api_keys.id, api_keys.project_id, api_keys.head, api_keys.name, api_keys.secret, api_keys.partner_id, api_keys.created_at FROM api_keys WHERE api_keys.project_id = ? ORDER BY api_keys.name")
+	var __embed_stmt = __sqlbundle_Literal("SELECT api_keys.id, api_keys.project_id, api_keys.head, api_keys.name, api_keys.secret, api_keys.partner_id, api_keys.user_agent, api_keys.created_at FROM api_keys WHERE api_keys.project_id = ? ORDER BY api_keys.name")
 
 	var __values []interface{}
 	__values = append(__values, api_key_project_id.value())
@@ -7515,7 +7612,7 @@ func (obj *postgresImpl) All_ApiKey_By_ProjectId_OrderBy_Asc_Name(ctx context.Co
 
 	for __rows.Next() {
 		api_key := &ApiKey{}
-		err = __rows.Scan(&api_key.Id, &api_key.ProjectId, &api_key.Head, &api_key.Name, &api_key.Secret, &api_key.PartnerId, &api_key.CreatedAt)
+		err = __rows.Scan(&api_key.Id, &api_key.ProjectId, &api_key.Head, &api_key.Name, &api_key.Secret, &api_key.PartnerId, &api_key.UserAgent, &api_key.CreatedAt)
 		if err != nil {
 			return nil, obj.makeErr(err)
 		}
@@ -8909,7 +9006,7 @@ func (obj *postgresImpl) Update_User_By_Id(ctx context.Context,
 	user *User, err error) {
 	var __sets = &__sqlbundle_Hole{}
 
-	var __embed_stmt = __sqlbundle_Literals{Join: "", SQLs: []__sqlbundle_SQL{__sqlbundle_Literal("UPDATE users SET "), __sets, __sqlbundle_Literal(" WHERE users.id = ? RETURNING users.id, users.email, users.normalized_email, users.full_name, users.short_name, users.password_hash, users.status, users.partner_id, users.created_at")}}
+	var __embed_stmt = __sqlbundle_Literals{Join: "", SQLs: []__sqlbundle_SQL{__sqlbundle_Literal("UPDATE users SET "), __sets, __sqlbundle_Literal(" WHERE users.id = ? RETURNING users.id, users.email, users.normalized_email, users.full_name, users.short_name, users.password_hash, users.status, users.partner_id, users.user_agent, users.created_at")}}
 
 	__sets_sql := __sqlbundle_Literals{Join: ", "}
 	var __values []interface{}
@@ -8945,6 +9042,11 @@ func (obj *postgresImpl) Update_User_By_Id(ctx context.Context,
 		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("status = ?"))
 	}
 
+	if update.UserAgent._set {
+		__values = append(__values, update.UserAgent.value())
+		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("user_agent = ?"))
+	}
+
 	if len(__sets_sql.SQLs) == 0 {
 		return nil, emptyUpdate()
 	}
@@ -8958,7 +9060,7 @@ func (obj *postgresImpl) Update_User_By_Id(ctx context.Context,
 	obj.logStmt(__stmt, __values...)
 
 	user = &User{}
-	err = obj.driver.QueryRow(__stmt, __values...).Scan(&user.Id, &user.Email, &user.NormalizedEmail, &user.FullName, &user.ShortName, &user.PasswordHash, &user.Status, &user.PartnerId, &user.CreatedAt)
+	err = obj.driver.QueryRow(__stmt, __values...).Scan(&user.Id, &user.Email, &user.NormalizedEmail, &user.FullName, &user.ShortName, &user.PasswordHash, &user.Status, &user.PartnerId, &user.UserAgent, &user.CreatedAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -8974,7 +9076,7 @@ func (obj *postgresImpl) Update_Project_By_Id(ctx context.Context,
 	project *Project, err error) {
 	var __sets = &__sqlbundle_Hole{}
 
-	var __embed_stmt = __sqlbundle_Literals{Join: "", SQLs: []__sqlbundle_SQL{__sqlbundle_Literal("UPDATE projects SET "), __sets, __sqlbundle_Literal(" WHERE projects.id = ? RETURNING projects.id, projects.name, projects.description, projects.usage_limit, projects.partner_id, projects.owner_id, projects.created_at")}}
+	var __embed_stmt = __sqlbundle_Literals{Join: "", SQLs: []__sqlbundle_SQL{__sqlbundle_Literal("UPDATE projects SET "), __sets, __sqlbundle_Literal(" WHERE projects.id = ? RETURNING projects.id, projects.name, projects.description, projects.usage_limit, projects.partner_id, projects.user_agent, projects.owner_id, projects.created_at")}}
 
 	__sets_sql := __sqlbundle_Literals{Join: ", "}
 	var __values []interface{}
@@ -8990,6 +9092,16 @@ func (obj *postgresImpl) Update_Project_By_Id(ctx context.Context,
 		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("usage_limit = ?"))
 	}
 
+	if update.PartnerId._set {
+		__values = append(__values, update.PartnerId.value())
+		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("partner_id = ?"))
+	}
+
+	if update.UserAgent._set {
+		__values = append(__values, update.UserAgent.value())
+		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("user_agent = ?"))
+	}
+
 	if len(__sets_sql.SQLs) == 0 {
 		return nil, emptyUpdate()
 	}
@@ -9003,7 +9115,7 @@ func (obj *postgresImpl) Update_Project_By_Id(ctx context.Context,
 	obj.logStmt(__stmt, __values...)
 
 	project = &Project{}
-	err = obj.driver.QueryRow(__stmt, __values...).Scan(&project.Id, &project.Name, &project.Description, &project.UsageLimit, &project.PartnerId, &project.OwnerId, &project.CreatedAt)
+	err = obj.driver.QueryRow(__stmt, __values...).Scan(&project.Id, &project.Name, &project.Description, &project.UsageLimit, &project.PartnerId, &project.UserAgent, &project.OwnerId, &project.CreatedAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -9028,6 +9140,11 @@ func (obj *postgresImpl) UpdateNoReturn_ApiKey_By_Id(ctx context.Context,
 	if update.Name._set {
 		__values = append(__values, update.Name.value())
 		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("name = ?"))
+	}
+
+	if update.UserAgent._set {
+		__values = append(__values, update.UserAgent.value())
+		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("user_agent = ?"))
 	}
 
 	if len(__sets_sql.SQLs) == 0 {
@@ -10747,13 +10864,14 @@ func (rx *Rx) Create_ApiKey(ctx context.Context,
 	api_key_head ApiKey_Head_Field,
 	api_key_name ApiKey_Name_Field,
 	api_key_secret ApiKey_Secret_Field,
+	api_key_user_agent ApiKey_UserAgent_Field,
 	optional ApiKey_Create_Fields) (
 	api_key *ApiKey, err error) {
 	var tx *Tx
 	if tx, err = rx.getTx(ctx); err != nil {
 		return
 	}
-	return tx.Create_ApiKey(ctx, api_key_id, api_key_project_id, api_key_head, api_key_name, api_key_secret, optional)
+	return tx.Create_ApiKey(ctx, api_key_id, api_key_project_id, api_key_head, api_key_name, api_key_secret, api_key_user_agent, optional)
 
 }
 
@@ -10838,6 +10956,7 @@ func (rx *Rx) Create_Project(ctx context.Context,
 	project_name Project_Name_Field,
 	project_description Project_Description_Field,
 	project_usage_limit Project_UsageLimit_Field,
+	project_user_agent Project_UserAgent_Field,
 	project_owner_id Project_OwnerId_Field,
 	optional Project_Create_Fields) (
 	project *Project, err error) {
@@ -10845,7 +10964,7 @@ func (rx *Rx) Create_Project(ctx context.Context,
 	if tx, err = rx.getTx(ctx); err != nil {
 		return
 	}
-	return tx.Create_Project(ctx, project_id, project_name, project_description, project_usage_limit, project_owner_id, optional)
+	return tx.Create_Project(ctx, project_id, project_name, project_description, project_usage_limit, project_user_agent, project_owner_id, optional)
 
 }
 
@@ -10949,13 +11068,14 @@ func (rx *Rx) Create_User(ctx context.Context,
 	user_normalized_email User_NormalizedEmail_Field,
 	user_full_name User_FullName_Field,
 	user_password_hash User_PasswordHash_Field,
+	user_user_agent User_UserAgent_Field,
 	optional User_Create_Fields) (
 	user *User, err error) {
 	var tx *Tx
 	if tx, err = rx.getTx(ctx); err != nil {
 		return
 	}
-	return tx.Create_User(ctx, user_id, user_email, user_normalized_email, user_full_name, user_password_hash, optional)
+	return tx.Create_User(ctx, user_id, user_email, user_normalized_email, user_full_name, user_password_hash, user_user_agent, optional)
 
 }
 
@@ -10978,13 +11098,14 @@ func (rx *Rx) Create_UserCredit(ctx context.Context,
 func (rx *Rx) Create_ValueAttribution(ctx context.Context,
 	value_attribution_project_id ValueAttribution_ProjectId_Field,
 	value_attribution_bucket_name ValueAttribution_BucketName_Field,
-	value_attribution_partner_id ValueAttribution_PartnerId_Field) (
+	value_attribution_partner_id ValueAttribution_PartnerId_Field,
+	value_attribution_user_agent ValueAttribution_UserAgent_Field) (
 	value_attribution *ValueAttribution, err error) {
 	var tx *Tx
 	if tx, err = rx.getTx(ctx); err != nil {
 		return
 	}
-	return tx.Create_ValueAttribution(ctx, value_attribution_project_id, value_attribution_bucket_name, value_attribution_partner_id)
+	return tx.Create_ValueAttribution(ctx, value_attribution_project_id, value_attribution_bucket_name, value_attribution_partner_id, value_attribution_user_agent)
 
 }
 
@@ -11980,6 +12101,7 @@ type Methods interface {
 		api_key_head ApiKey_Head_Field,
 		api_key_name ApiKey_Name_Field,
 		api_key_secret ApiKey_Secret_Field,
+		api_key_user_agent ApiKey_UserAgent_Field,
 		optional ApiKey_Create_Fields) (
 		api_key *ApiKey, err error)
 
@@ -12036,6 +12158,7 @@ type Methods interface {
 		project_name Project_Name_Field,
 		project_description Project_Description_Field,
 		project_usage_limit Project_UsageLimit_Field,
+		project_user_agent Project_UserAgent_Field,
 		project_owner_id Project_OwnerId_Field,
 		optional Project_Create_Fields) (
 		project *Project, err error)
@@ -12091,6 +12214,7 @@ type Methods interface {
 		user_normalized_email User_NormalizedEmail_Field,
 		user_full_name User_FullName_Field,
 		user_password_hash User_PasswordHash_Field,
+		user_user_agent User_UserAgent_Field,
 		optional User_Create_Fields) (
 		user *User, err error)
 
@@ -12106,7 +12230,8 @@ type Methods interface {
 	Create_ValueAttribution(ctx context.Context,
 		value_attribution_project_id ValueAttribution_ProjectId_Field,
 		value_attribution_bucket_name ValueAttribution_BucketName_Field,
-		value_attribution_partner_id ValueAttribution_PartnerId_Field) (
+		value_attribution_partner_id ValueAttribution_PartnerId_Field,
+		value_attribution_user_agent ValueAttribution_UserAgent_Field) (
 		value_attribution *ValueAttribution, err error)
 
 	Delete_AccountingRollup_By_Id(ctx context.Context,
