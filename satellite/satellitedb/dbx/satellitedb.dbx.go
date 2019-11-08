@@ -427,9 +427,9 @@ CREATE TABLE projects (
 	name text NOT NULL,
 	description text NOT NULL,
 	usage_limit bigint NOT NULL,
-	partner_id bytea,
 	owner_id bytea NOT NULL,
 	created_at timestamp with time zone NOT NULL,
+	partner_user_agent bytea,
 	PRIMARY KEY ( id )
 );
 CREATE TABLE registration_tokens (
@@ -498,14 +498,14 @@ CREATE TABLE users (
 	short_name text,
 	password_hash bytea NOT NULL,
 	status integer NOT NULL,
-	partner_id bytea,
 	created_at timestamp with time zone NOT NULL,
+	partner_user_agent bytea,
 	PRIMARY KEY ( id )
 );
 CREATE TABLE value_attributions (
 	project_id bytea NOT NULL,
 	bucket_name bytea NOT NULL,
-	partner_id bytea NOT NULL,
+	partner_user_agent bytea NOT NULL,
 	last_updated timestamp NOT NULL,
 	PRIMARY KEY ( project_id, bucket_name )
 );
@@ -515,8 +515,8 @@ CREATE TABLE api_keys (
 	head bytea NOT NULL,
 	name text NOT NULL,
 	secret bytea NOT NULL,
-	partner_id bytea,
 	created_at timestamp with time zone NOT NULL,
+	partner_user_agent bytea,
 	PRIMARY KEY ( id ),
 	UNIQUE ( head ),
 	UNIQUE ( name, project_id )
@@ -525,7 +525,6 @@ CREATE TABLE bucket_metainfos (
 	id bytea NOT NULL,
 	project_id bytea NOT NULL REFERENCES projects( id ),
 	name bytea NOT NULL,
-	partner_id bytea,
 	path_cipher integer NOT NULL,
 	created_at timestamp with time zone NOT NULL,
 	default_segment_size integer NOT NULL,
@@ -3411,19 +3410,19 @@ func (f PendingAudits_Path_Field) value() interface{} {
 func (PendingAudits_Path_Field) _Column() string { return "path" }
 
 type Project struct {
-	Id          []byte
-	Name        string
-	Description string
-	UsageLimit  int64
-	PartnerId   []byte
-	OwnerId     []byte
-	CreatedAt   time.Time
+	Id               []byte
+	Name             string
+	Description      string
+	UsageLimit       int64
+	OwnerId          []byte
+	CreatedAt        time.Time
+	PartnerUserAgent []byte
 }
 
 func (Project) _Table() string { return "projects" }
 
 type Project_Create_Fields struct {
-	PartnerId Project_PartnerId_Field
+	PartnerUserAgent Project_PartnerUserAgent_Field
 }
 
 type Project_Update_Fields struct {
@@ -3507,38 +3506,6 @@ func (f Project_UsageLimit_Field) value() interface{} {
 
 func (Project_UsageLimit_Field) _Column() string { return "usage_limit" }
 
-type Project_PartnerId_Field struct {
-	_set   bool
-	_null  bool
-	_value []byte
-}
-
-func Project_PartnerId(v []byte) Project_PartnerId_Field {
-	return Project_PartnerId_Field{_set: true, _value: v}
-}
-
-func Project_PartnerId_Raw(v []byte) Project_PartnerId_Field {
-	if v == nil {
-		return Project_PartnerId_Null()
-	}
-	return Project_PartnerId(v)
-}
-
-func Project_PartnerId_Null() Project_PartnerId_Field {
-	return Project_PartnerId_Field{_set: true, _null: true}
-}
-
-func (f Project_PartnerId_Field) isnull() bool { return !f._set || f._null || f._value == nil }
-
-func (f Project_PartnerId_Field) value() interface{} {
-	if !f._set || f._null {
-		return nil
-	}
-	return f._value
-}
-
-func (Project_PartnerId_Field) _Column() string { return "partner_id" }
-
 type Project_OwnerId_Field struct {
 	_set   bool
 	_null  bool
@@ -3576,6 +3543,38 @@ func (f Project_CreatedAt_Field) value() interface{} {
 }
 
 func (Project_CreatedAt_Field) _Column() string { return "created_at" }
+
+type Project_PartnerUserAgent_Field struct {
+	_set   bool
+	_null  bool
+	_value []byte
+}
+
+func Project_PartnerUserAgent(v []byte) Project_PartnerUserAgent_Field {
+	return Project_PartnerUserAgent_Field{_set: true, _value: v}
+}
+
+func Project_PartnerUserAgent_Raw(v []byte) Project_PartnerUserAgent_Field {
+	if v == nil {
+		return Project_PartnerUserAgent_Null()
+	}
+	return Project_PartnerUserAgent(v)
+}
+
+func Project_PartnerUserAgent_Null() Project_PartnerUserAgent_Field {
+	return Project_PartnerUserAgent_Field{_set: true, _null: true}
+}
+
+func (f Project_PartnerUserAgent_Field) isnull() bool { return !f._set || f._null || f._value == nil }
+
+func (f Project_PartnerUserAgent_Field) value() interface{} {
+	if !f._set || f._null {
+		return nil
+	}
+	return f._value
+}
+
+func (Project_PartnerUserAgent_Field) _Column() string { return "partner_user_agent" }
 
 type RegistrationToken struct {
 	Secret       []byte
@@ -4322,22 +4321,22 @@ func (f StripecoinpaymentsInvoiceProjectRecord_CreatedAt_Field) value() interfac
 func (StripecoinpaymentsInvoiceProjectRecord_CreatedAt_Field) _Column() string { return "created_at" }
 
 type User struct {
-	Id              []byte
-	Email           string
-	NormalizedEmail string
-	FullName        string
-	ShortName       *string
-	PasswordHash    []byte
-	Status          int
-	PartnerId       []byte
-	CreatedAt       time.Time
+	Id               []byte
+	Email            string
+	NormalizedEmail  string
+	FullName         string
+	ShortName        *string
+	PasswordHash     []byte
+	Status           int
+	CreatedAt        time.Time
+	PartnerUserAgent []byte
 }
 
 func (User) _Table() string { return "users" }
 
 type User_Create_Fields struct {
-	ShortName User_ShortName_Field
-	PartnerId User_PartnerId_Field
+	ShortName        User_ShortName_Field
+	PartnerUserAgent User_PartnerUserAgent_Field
 }
 
 type User_Update_Fields struct {
@@ -4495,38 +4494,6 @@ func (f User_Status_Field) value() interface{} {
 
 func (User_Status_Field) _Column() string { return "status" }
 
-type User_PartnerId_Field struct {
-	_set   bool
-	_null  bool
-	_value []byte
-}
-
-func User_PartnerId(v []byte) User_PartnerId_Field {
-	return User_PartnerId_Field{_set: true, _value: v}
-}
-
-func User_PartnerId_Raw(v []byte) User_PartnerId_Field {
-	if v == nil {
-		return User_PartnerId_Null()
-	}
-	return User_PartnerId(v)
-}
-
-func User_PartnerId_Null() User_PartnerId_Field {
-	return User_PartnerId_Field{_set: true, _null: true}
-}
-
-func (f User_PartnerId_Field) isnull() bool { return !f._set || f._null || f._value == nil }
-
-func (f User_PartnerId_Field) value() interface{} {
-	if !f._set || f._null {
-		return nil
-	}
-	return f._value
-}
-
-func (User_PartnerId_Field) _Column() string { return "partner_id" }
-
 type User_CreatedAt_Field struct {
 	_set   bool
 	_null  bool
@@ -4546,11 +4513,43 @@ func (f User_CreatedAt_Field) value() interface{} {
 
 func (User_CreatedAt_Field) _Column() string { return "created_at" }
 
+type User_PartnerUserAgent_Field struct {
+	_set   bool
+	_null  bool
+	_value []byte
+}
+
+func User_PartnerUserAgent(v []byte) User_PartnerUserAgent_Field {
+	return User_PartnerUserAgent_Field{_set: true, _value: v}
+}
+
+func User_PartnerUserAgent_Raw(v []byte) User_PartnerUserAgent_Field {
+	if v == nil {
+		return User_PartnerUserAgent_Null()
+	}
+	return User_PartnerUserAgent(v)
+}
+
+func User_PartnerUserAgent_Null() User_PartnerUserAgent_Field {
+	return User_PartnerUserAgent_Field{_set: true, _null: true}
+}
+
+func (f User_PartnerUserAgent_Field) isnull() bool { return !f._set || f._null || f._value == nil }
+
+func (f User_PartnerUserAgent_Field) value() interface{} {
+	if !f._set || f._null {
+		return nil
+	}
+	return f._value
+}
+
+func (User_PartnerUserAgent_Field) _Column() string { return "partner_user_agent" }
+
 type ValueAttribution struct {
-	ProjectId   []byte
-	BucketName  []byte
-	PartnerId   []byte
-	LastUpdated time.Time
+	ProjectId        []byte
+	BucketName       []byte
+	PartnerUserAgent []byte
+	LastUpdated      time.Time
 }
 
 func (ValueAttribution) _Table() string { return "value_attributions" }
@@ -4596,24 +4595,24 @@ func (f ValueAttribution_BucketName_Field) value() interface{} {
 
 func (ValueAttribution_BucketName_Field) _Column() string { return "bucket_name" }
 
-type ValueAttribution_PartnerId_Field struct {
+type ValueAttribution_PartnerUserAgent_Field struct {
 	_set   bool
 	_null  bool
 	_value []byte
 }
 
-func ValueAttribution_PartnerId(v []byte) ValueAttribution_PartnerId_Field {
-	return ValueAttribution_PartnerId_Field{_set: true, _value: v}
+func ValueAttribution_PartnerUserAgent(v []byte) ValueAttribution_PartnerUserAgent_Field {
+	return ValueAttribution_PartnerUserAgent_Field{_set: true, _value: v}
 }
 
-func (f ValueAttribution_PartnerId_Field) value() interface{} {
+func (f ValueAttribution_PartnerUserAgent_Field) value() interface{} {
 	if !f._set || f._null {
 		return nil
 	}
 	return f._value
 }
 
-func (ValueAttribution_PartnerId_Field) _Column() string { return "partner_id" }
+func (ValueAttribution_PartnerUserAgent_Field) _Column() string { return "partner_user_agent" }
 
 type ValueAttribution_LastUpdated_Field struct {
 	_set   bool
@@ -4636,19 +4635,19 @@ func (f ValueAttribution_LastUpdated_Field) value() interface{} {
 func (ValueAttribution_LastUpdated_Field) _Column() string { return "last_updated" }
 
 type ApiKey struct {
-	Id        []byte
-	ProjectId []byte
-	Head      []byte
-	Name      string
-	Secret    []byte
-	PartnerId []byte
-	CreatedAt time.Time
+	Id               []byte
+	ProjectId        []byte
+	Head             []byte
+	Name             string
+	Secret           []byte
+	CreatedAt        time.Time
+	PartnerUserAgent []byte
 }
 
 func (ApiKey) _Table() string { return "api_keys" }
 
 type ApiKey_Create_Fields struct {
-	PartnerId ApiKey_PartnerId_Field
+	PartnerUserAgent ApiKey_PartnerUserAgent_Field
 }
 
 type ApiKey_Update_Fields struct {
@@ -4750,38 +4749,6 @@ func (f ApiKey_Secret_Field) value() interface{} {
 
 func (ApiKey_Secret_Field) _Column() string { return "secret" }
 
-type ApiKey_PartnerId_Field struct {
-	_set   bool
-	_null  bool
-	_value []byte
-}
-
-func ApiKey_PartnerId(v []byte) ApiKey_PartnerId_Field {
-	return ApiKey_PartnerId_Field{_set: true, _value: v}
-}
-
-func ApiKey_PartnerId_Raw(v []byte) ApiKey_PartnerId_Field {
-	if v == nil {
-		return ApiKey_PartnerId_Null()
-	}
-	return ApiKey_PartnerId(v)
-}
-
-func ApiKey_PartnerId_Null() ApiKey_PartnerId_Field {
-	return ApiKey_PartnerId_Field{_set: true, _null: true}
-}
-
-func (f ApiKey_PartnerId_Field) isnull() bool { return !f._set || f._null || f._value == nil }
-
-func (f ApiKey_PartnerId_Field) value() interface{} {
-	if !f._set || f._null {
-		return nil
-	}
-	return f._value
-}
-
-func (ApiKey_PartnerId_Field) _Column() string { return "partner_id" }
-
 type ApiKey_CreatedAt_Field struct {
 	_set   bool
 	_null  bool
@@ -4801,11 +4768,42 @@ func (f ApiKey_CreatedAt_Field) value() interface{} {
 
 func (ApiKey_CreatedAt_Field) _Column() string { return "created_at" }
 
+type ApiKey_PartnerUserAgent_Field struct {
+	_set   bool
+	_null  bool
+	_value []byte
+}
+
+func ApiKey_PartnerUserAgent(v []byte) ApiKey_PartnerUserAgent_Field {
+	return ApiKey_PartnerUserAgent_Field{_set: true, _value: v}
+}
+
+func ApiKey_PartnerUserAgent_Raw(v []byte) ApiKey_PartnerUserAgent_Field {
+	if v == nil {
+		return ApiKey_PartnerUserAgent_Null()
+	}
+	return ApiKey_PartnerUserAgent(v)
+}
+
+func ApiKey_PartnerUserAgent_Null() ApiKey_PartnerUserAgent_Field {
+	return ApiKey_PartnerUserAgent_Field{_set: true, _null: true}
+}
+
+func (f ApiKey_PartnerUserAgent_Field) isnull() bool { return !f._set || f._null || f._value == nil }
+
+func (f ApiKey_PartnerUserAgent_Field) value() interface{} {
+	if !f._set || f._null {
+		return nil
+	}
+	return f._value
+}
+
+func (ApiKey_PartnerUserAgent_Field) _Column() string { return "partner_user_agent" }
+
 type BucketMetainfo struct {
 	Id                              []byte
 	ProjectId                       []byte
 	Name                            []byte
-	PartnerId                       []byte
 	PathCipher                      int
 	CreatedAt                       time.Time
 	DefaultSegmentSize              int
@@ -4821,12 +4819,7 @@ type BucketMetainfo struct {
 
 func (BucketMetainfo) _Table() string { return "bucket_metainfos" }
 
-type BucketMetainfo_Create_Fields struct {
-	PartnerId BucketMetainfo_PartnerId_Field
-}
-
 type BucketMetainfo_Update_Fields struct {
-	PartnerId                       BucketMetainfo_PartnerId_Field
 	DefaultSegmentSize              BucketMetainfo_DefaultSegmentSize_Field
 	DefaultEncryptionCipherSuite    BucketMetainfo_DefaultEncryptionCipherSuite_Field
 	DefaultEncryptionBlockSize      BucketMetainfo_DefaultEncryptionBlockSize_Field
@@ -4894,38 +4887,6 @@ func (f BucketMetainfo_Name_Field) value() interface{} {
 }
 
 func (BucketMetainfo_Name_Field) _Column() string { return "name" }
-
-type BucketMetainfo_PartnerId_Field struct {
-	_set   bool
-	_null  bool
-	_value []byte
-}
-
-func BucketMetainfo_PartnerId(v []byte) BucketMetainfo_PartnerId_Field {
-	return BucketMetainfo_PartnerId_Field{_set: true, _value: v}
-}
-
-func BucketMetainfo_PartnerId_Raw(v []byte) BucketMetainfo_PartnerId_Field {
-	if v == nil {
-		return BucketMetainfo_PartnerId_Null()
-	}
-	return BucketMetainfo_PartnerId(v)
-}
-
-func BucketMetainfo_PartnerId_Null() BucketMetainfo_PartnerId_Field {
-	return BucketMetainfo_PartnerId_Field{_set: true, _null: true}
-}
-
-func (f BucketMetainfo_PartnerId_Field) isnull() bool { return !f._set || f._null || f._value == nil }
-
-func (f BucketMetainfo_PartnerId_Field) value() interface{} {
-	if !f._set || f._null {
-		return nil
-	}
-	return f._value
-}
-
-func (BucketMetainfo_PartnerId_Field) _Column() string { return "partner_id" }
 
 type BucketMetainfo_PathCipher_Field struct {
 	_set   bool
@@ -5899,22 +5860,22 @@ type Value_Row struct {
 func (obj *postgresImpl) Create_ValueAttribution(ctx context.Context,
 	value_attribution_project_id ValueAttribution_ProjectId_Field,
 	value_attribution_bucket_name ValueAttribution_BucketName_Field,
-	value_attribution_partner_id ValueAttribution_PartnerId_Field) (
+	value_attribution_partner_user_agent ValueAttribution_PartnerUserAgent_Field) (
 	value_attribution *ValueAttribution, err error) {
 
 	__now := obj.db.Hooks.Now().UTC()
 	__project_id_val := value_attribution_project_id.value()
 	__bucket_name_val := value_attribution_bucket_name.value()
-	__partner_id_val := value_attribution_partner_id.value()
+	__partner_user_agent_val := value_attribution_partner_user_agent.value()
 	__last_updated_val := __now.UTC()
 
-	var __embed_stmt = __sqlbundle_Literal("INSERT INTO value_attributions ( project_id, bucket_name, partner_id, last_updated ) VALUES ( ?, ?, ?, ? ) RETURNING value_attributions.project_id, value_attributions.bucket_name, value_attributions.partner_id, value_attributions.last_updated")
+	var __embed_stmt = __sqlbundle_Literal("INSERT INTO value_attributions ( project_id, bucket_name, partner_user_agent, last_updated ) VALUES ( ?, ?, ?, ? ) RETURNING value_attributions.project_id, value_attributions.bucket_name, value_attributions.partner_user_agent, value_attributions.last_updated")
 
 	var __stmt = __sqlbundle_Render(obj.dialect, __embed_stmt)
-	obj.logStmt(__stmt, __project_id_val, __bucket_name_val, __partner_id_val, __last_updated_val)
+	obj.logStmt(__stmt, __project_id_val, __bucket_name_val, __partner_user_agent_val, __last_updated_val)
 
 	value_attribution = &ValueAttribution{}
-	err = obj.driver.QueryRow(__stmt, __project_id_val, __bucket_name_val, __partner_id_val, __last_updated_val).Scan(&value_attribution.ProjectId, &value_attribution.BucketName, &value_attribution.PartnerId, &value_attribution.LastUpdated)
+	err = obj.driver.QueryRow(__stmt, __project_id_val, __bucket_name_val, __partner_user_agent_val, __last_updated_val).Scan(&value_attribution.ProjectId, &value_attribution.BucketName, &value_attribution.PartnerUserAgent, &value_attribution.LastUpdated)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
@@ -6130,16 +6091,16 @@ func (obj *postgresImpl) Create_User(ctx context.Context,
 	__short_name_val := optional.ShortName.value()
 	__password_hash_val := user_password_hash.value()
 	__status_val := int(0)
-	__partner_id_val := optional.PartnerId.value()
 	__created_at_val := __now
+	__partner_user_agent_val := optional.PartnerUserAgent.value()
 
-	var __embed_stmt = __sqlbundle_Literal("INSERT INTO users ( id, email, normalized_email, full_name, short_name, password_hash, status, partner_id, created_at ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ? ) RETURNING users.id, users.email, users.normalized_email, users.full_name, users.short_name, users.password_hash, users.status, users.partner_id, users.created_at")
+	var __embed_stmt = __sqlbundle_Literal("INSERT INTO users ( id, email, normalized_email, full_name, short_name, password_hash, status, created_at, partner_user_agent ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ? ) RETURNING users.id, users.email, users.normalized_email, users.full_name, users.short_name, users.password_hash, users.status, users.created_at, users.partner_user_agent")
 
 	var __stmt = __sqlbundle_Render(obj.dialect, __embed_stmt)
-	obj.logStmt(__stmt, __id_val, __email_val, __normalized_email_val, __full_name_val, __short_name_val, __password_hash_val, __status_val, __partner_id_val, __created_at_val)
+	obj.logStmt(__stmt, __id_val, __email_val, __normalized_email_val, __full_name_val, __short_name_val, __password_hash_val, __status_val, __created_at_val, __partner_user_agent_val)
 
 	user = &User{}
-	err = obj.driver.QueryRow(__stmt, __id_val, __email_val, __normalized_email_val, __full_name_val, __short_name_val, __password_hash_val, __status_val, __partner_id_val, __created_at_val).Scan(&user.Id, &user.Email, &user.NormalizedEmail, &user.FullName, &user.ShortName, &user.PasswordHash, &user.Status, &user.PartnerId, &user.CreatedAt)
+	err = obj.driver.QueryRow(__stmt, __id_val, __email_val, __normalized_email_val, __full_name_val, __short_name_val, __password_hash_val, __status_val, __created_at_val, __partner_user_agent_val).Scan(&user.Id, &user.Email, &user.NormalizedEmail, &user.FullName, &user.ShortName, &user.PasswordHash, &user.Status, &user.CreatedAt, &user.PartnerUserAgent)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
@@ -6161,17 +6122,17 @@ func (obj *postgresImpl) Create_Project(ctx context.Context,
 	__name_val := project_name.value()
 	__description_val := project_description.value()
 	__usage_limit_val := project_usage_limit.value()
-	__partner_id_val := optional.PartnerId.value()
 	__owner_id_val := project_owner_id.value()
 	__created_at_val := __now
+	__partner_user_agent_val := optional.PartnerUserAgent.value()
 
-	var __embed_stmt = __sqlbundle_Literal("INSERT INTO projects ( id, name, description, usage_limit, partner_id, owner_id, created_at ) VALUES ( ?, ?, ?, ?, ?, ?, ? ) RETURNING projects.id, projects.name, projects.description, projects.usage_limit, projects.partner_id, projects.owner_id, projects.created_at")
+	var __embed_stmt = __sqlbundle_Literal("INSERT INTO projects ( id, name, description, usage_limit, owner_id, created_at, partner_user_agent ) VALUES ( ?, ?, ?, ?, ?, ?, ? ) RETURNING projects.id, projects.name, projects.description, projects.usage_limit, projects.owner_id, projects.created_at, projects.partner_user_agent")
 
 	var __stmt = __sqlbundle_Render(obj.dialect, __embed_stmt)
-	obj.logStmt(__stmt, __id_val, __name_val, __description_val, __usage_limit_val, __partner_id_val, __owner_id_val, __created_at_val)
+	obj.logStmt(__stmt, __id_val, __name_val, __description_val, __usage_limit_val, __owner_id_val, __created_at_val, __partner_user_agent_val)
 
 	project = &Project{}
-	err = obj.driver.QueryRow(__stmt, __id_val, __name_val, __description_val, __usage_limit_val, __partner_id_val, __owner_id_val, __created_at_val).Scan(&project.Id, &project.Name, &project.Description, &project.UsageLimit, &project.PartnerId, &project.OwnerId, &project.CreatedAt)
+	err = obj.driver.QueryRow(__stmt, __id_val, __name_val, __description_val, __usage_limit_val, __owner_id_val, __created_at_val, __partner_user_agent_val).Scan(&project.Id, &project.Name, &project.Description, &project.UsageLimit, &project.OwnerId, &project.CreatedAt, &project.PartnerUserAgent)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
@@ -6245,16 +6206,16 @@ func (obj *postgresImpl) Create_ApiKey(ctx context.Context,
 	__head_val := api_key_head.value()
 	__name_val := api_key_name.value()
 	__secret_val := api_key_secret.value()
-	__partner_id_val := optional.PartnerId.value()
 	__created_at_val := __now
+	__partner_user_agent_val := optional.PartnerUserAgent.value()
 
-	var __embed_stmt = __sqlbundle_Literal("INSERT INTO api_keys ( id, project_id, head, name, secret, partner_id, created_at ) VALUES ( ?, ?, ?, ?, ?, ?, ? ) RETURNING api_keys.id, api_keys.project_id, api_keys.head, api_keys.name, api_keys.secret, api_keys.partner_id, api_keys.created_at")
+	var __embed_stmt = __sqlbundle_Literal("INSERT INTO api_keys ( id, project_id, head, name, secret, created_at, partner_user_agent ) VALUES ( ?, ?, ?, ?, ?, ?, ? ) RETURNING api_keys.id, api_keys.project_id, api_keys.head, api_keys.name, api_keys.secret, api_keys.created_at, api_keys.partner_user_agent")
 
 	var __stmt = __sqlbundle_Render(obj.dialect, __embed_stmt)
-	obj.logStmt(__stmt, __id_val, __project_id_val, __head_val, __name_val, __secret_val, __partner_id_val, __created_at_val)
+	obj.logStmt(__stmt, __id_val, __project_id_val, __head_val, __name_val, __secret_val, __created_at_val, __partner_user_agent_val)
 
 	api_key = &ApiKey{}
-	err = obj.driver.QueryRow(__stmt, __id_val, __project_id_val, __head_val, __name_val, __secret_val, __partner_id_val, __created_at_val).Scan(&api_key.Id, &api_key.ProjectId, &api_key.Head, &api_key.Name, &api_key.Secret, &api_key.PartnerId, &api_key.CreatedAt)
+	err = obj.driver.QueryRow(__stmt, __id_val, __project_id_val, __head_val, __name_val, __secret_val, __created_at_val, __partner_user_agent_val).Scan(&api_key.Id, &api_key.ProjectId, &api_key.Head, &api_key.Name, &api_key.Secret, &api_key.CreatedAt, &api_key.PartnerUserAgent)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
@@ -6519,15 +6480,13 @@ func (obj *postgresImpl) Create_BucketMetainfo(ctx context.Context,
 	bucket_metainfo_default_redundancy_required_shares BucketMetainfo_DefaultRedundancyRequiredShares_Field,
 	bucket_metainfo_default_redundancy_repair_shares BucketMetainfo_DefaultRedundancyRepairShares_Field,
 	bucket_metainfo_default_redundancy_optimal_shares BucketMetainfo_DefaultRedundancyOptimalShares_Field,
-	bucket_metainfo_default_redundancy_total_shares BucketMetainfo_DefaultRedundancyTotalShares_Field,
-	optional BucketMetainfo_Create_Fields) (
+	bucket_metainfo_default_redundancy_total_shares BucketMetainfo_DefaultRedundancyTotalShares_Field) (
 	bucket_metainfo *BucketMetainfo, err error) {
 
 	__now := obj.db.Hooks.Now().UTC()
 	__id_val := bucket_metainfo_id.value()
 	__project_id_val := bucket_metainfo_project_id.value()
 	__name_val := bucket_metainfo_name.value()
-	__partner_id_val := optional.PartnerId.value()
 	__path_cipher_val := bucket_metainfo_path_cipher.value()
 	__created_at_val := __now
 	__default_segment_size_val := bucket_metainfo_default_segment_size.value()
@@ -6540,13 +6499,13 @@ func (obj *postgresImpl) Create_BucketMetainfo(ctx context.Context,
 	__default_redundancy_optimal_shares_val := bucket_metainfo_default_redundancy_optimal_shares.value()
 	__default_redundancy_total_shares_val := bucket_metainfo_default_redundancy_total_shares.value()
 
-	var __embed_stmt = __sqlbundle_Literal("INSERT INTO bucket_metainfos ( id, project_id, name, partner_id, path_cipher, created_at, default_segment_size, default_encryption_cipher_suite, default_encryption_block_size, default_redundancy_algorithm, default_redundancy_share_size, default_redundancy_required_shares, default_redundancy_repair_shares, default_redundancy_optimal_shares, default_redundancy_total_shares ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ) RETURNING bucket_metainfos.id, bucket_metainfos.project_id, bucket_metainfos.name, bucket_metainfos.partner_id, bucket_metainfos.path_cipher, bucket_metainfos.created_at, bucket_metainfos.default_segment_size, bucket_metainfos.default_encryption_cipher_suite, bucket_metainfos.default_encryption_block_size, bucket_metainfos.default_redundancy_algorithm, bucket_metainfos.default_redundancy_share_size, bucket_metainfos.default_redundancy_required_shares, bucket_metainfos.default_redundancy_repair_shares, bucket_metainfos.default_redundancy_optimal_shares, bucket_metainfos.default_redundancy_total_shares")
+	var __embed_stmt = __sqlbundle_Literal("INSERT INTO bucket_metainfos ( id, project_id, name, path_cipher, created_at, default_segment_size, default_encryption_cipher_suite, default_encryption_block_size, default_redundancy_algorithm, default_redundancy_share_size, default_redundancy_required_shares, default_redundancy_repair_shares, default_redundancy_optimal_shares, default_redundancy_total_shares ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ) RETURNING bucket_metainfos.id, bucket_metainfos.project_id, bucket_metainfos.name, bucket_metainfos.path_cipher, bucket_metainfos.created_at, bucket_metainfos.default_segment_size, bucket_metainfos.default_encryption_cipher_suite, bucket_metainfos.default_encryption_block_size, bucket_metainfos.default_redundancy_algorithm, bucket_metainfos.default_redundancy_share_size, bucket_metainfos.default_redundancy_required_shares, bucket_metainfos.default_redundancy_repair_shares, bucket_metainfos.default_redundancy_optimal_shares, bucket_metainfos.default_redundancy_total_shares")
 
 	var __stmt = __sqlbundle_Render(obj.dialect, __embed_stmt)
-	obj.logStmt(__stmt, __id_val, __project_id_val, __name_val, __partner_id_val, __path_cipher_val, __created_at_val, __default_segment_size_val, __default_encryption_cipher_suite_val, __default_encryption_block_size_val, __default_redundancy_algorithm_val, __default_redundancy_share_size_val, __default_redundancy_required_shares_val, __default_redundancy_repair_shares_val, __default_redundancy_optimal_shares_val, __default_redundancy_total_shares_val)
+	obj.logStmt(__stmt, __id_val, __project_id_val, __name_val, __path_cipher_val, __created_at_val, __default_segment_size_val, __default_encryption_cipher_suite_val, __default_encryption_block_size_val, __default_redundancy_algorithm_val, __default_redundancy_share_size_val, __default_redundancy_required_shares_val, __default_redundancy_repair_shares_val, __default_redundancy_optimal_shares_val, __default_redundancy_total_shares_val)
 
 	bucket_metainfo = &BucketMetainfo{}
-	err = obj.driver.QueryRow(__stmt, __id_val, __project_id_val, __name_val, __partner_id_val, __path_cipher_val, __created_at_val, __default_segment_size_val, __default_encryption_cipher_suite_val, __default_encryption_block_size_val, __default_redundancy_algorithm_val, __default_redundancy_share_size_val, __default_redundancy_required_shares_val, __default_redundancy_repair_shares_val, __default_redundancy_optimal_shares_val, __default_redundancy_total_shares_val).Scan(&bucket_metainfo.Id, &bucket_metainfo.ProjectId, &bucket_metainfo.Name, &bucket_metainfo.PartnerId, &bucket_metainfo.PathCipher, &bucket_metainfo.CreatedAt, &bucket_metainfo.DefaultSegmentSize, &bucket_metainfo.DefaultEncryptionCipherSuite, &bucket_metainfo.DefaultEncryptionBlockSize, &bucket_metainfo.DefaultRedundancyAlgorithm, &bucket_metainfo.DefaultRedundancyShareSize, &bucket_metainfo.DefaultRedundancyRequiredShares, &bucket_metainfo.DefaultRedundancyRepairShares, &bucket_metainfo.DefaultRedundancyOptimalShares, &bucket_metainfo.DefaultRedundancyTotalShares)
+	err = obj.driver.QueryRow(__stmt, __id_val, __project_id_val, __name_val, __path_cipher_val, __created_at_val, __default_segment_size_val, __default_encryption_cipher_suite_val, __default_encryption_block_size_val, __default_redundancy_algorithm_val, __default_redundancy_share_size_val, __default_redundancy_required_shares_val, __default_redundancy_repair_shares_val, __default_redundancy_optimal_shares_val, __default_redundancy_total_shares_val).Scan(&bucket_metainfo.Id, &bucket_metainfo.ProjectId, &bucket_metainfo.Name, &bucket_metainfo.PathCipher, &bucket_metainfo.CreatedAt, &bucket_metainfo.DefaultSegmentSize, &bucket_metainfo.DefaultEncryptionCipherSuite, &bucket_metainfo.DefaultEncryptionBlockSize, &bucket_metainfo.DefaultRedundancyAlgorithm, &bucket_metainfo.DefaultRedundancyShareSize, &bucket_metainfo.DefaultRedundancyRequiredShares, &bucket_metainfo.DefaultRedundancyRepairShares, &bucket_metainfo.DefaultRedundancyOptimalShares, &bucket_metainfo.DefaultRedundancyTotalShares)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
@@ -6736,7 +6695,7 @@ func (obj *postgresImpl) Get_ValueAttribution_By_ProjectId_And_BucketName(ctx co
 	value_attribution_bucket_name ValueAttribution_BucketName_Field) (
 	value_attribution *ValueAttribution, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT value_attributions.project_id, value_attributions.bucket_name, value_attributions.partner_id, value_attributions.last_updated FROM value_attributions WHERE value_attributions.project_id = ? AND value_attributions.bucket_name = ?")
+	var __embed_stmt = __sqlbundle_Literal("SELECT value_attributions.project_id, value_attributions.bucket_name, value_attributions.partner_user_agent, value_attributions.last_updated FROM value_attributions WHERE value_attributions.project_id = ? AND value_attributions.bucket_name = ?")
 
 	var __values []interface{}
 	__values = append(__values, value_attribution_project_id.value(), value_attribution_bucket_name.value())
@@ -6745,7 +6704,7 @@ func (obj *postgresImpl) Get_ValueAttribution_By_ProjectId_And_BucketName(ctx co
 	obj.logStmt(__stmt, __values...)
 
 	value_attribution = &ValueAttribution{}
-	err = obj.driver.QueryRow(__stmt, __values...).Scan(&value_attribution.ProjectId, &value_attribution.BucketName, &value_attribution.PartnerId, &value_attribution.LastUpdated)
+	err = obj.driver.QueryRow(__stmt, __values...).Scan(&value_attribution.ProjectId, &value_attribution.BucketName, &value_attribution.PartnerUserAgent, &value_attribution.LastUpdated)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
@@ -7070,7 +7029,7 @@ func (obj *postgresImpl) Get_User_By_NormalizedEmail_And_Status_Not_Number(ctx c
 	user_normalized_email User_NormalizedEmail_Field) (
 	user *User, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT users.id, users.email, users.normalized_email, users.full_name, users.short_name, users.password_hash, users.status, users.partner_id, users.created_at FROM users WHERE users.normalized_email = ? AND users.status != 0 LIMIT 2")
+	var __embed_stmt = __sqlbundle_Literal("SELECT users.id, users.email, users.normalized_email, users.full_name, users.short_name, users.password_hash, users.status, users.created_at, users.partner_user_agent FROM users WHERE users.normalized_email = ? AND users.status != 0 LIMIT 2")
 
 	var __values []interface{}
 	__values = append(__values, user_normalized_email.value())
@@ -7092,7 +7051,7 @@ func (obj *postgresImpl) Get_User_By_NormalizedEmail_And_Status_Not_Number(ctx c
 	}
 
 	user = &User{}
-	err = __rows.Scan(&user.Id, &user.Email, &user.NormalizedEmail, &user.FullName, &user.ShortName, &user.PasswordHash, &user.Status, &user.PartnerId, &user.CreatedAt)
+	err = __rows.Scan(&user.Id, &user.Email, &user.NormalizedEmail, &user.FullName, &user.ShortName, &user.PasswordHash, &user.Status, &user.CreatedAt, &user.PartnerUserAgent)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
@@ -7113,7 +7072,7 @@ func (obj *postgresImpl) Get_User_By_Id(ctx context.Context,
 	user_id User_Id_Field) (
 	user *User, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT users.id, users.email, users.normalized_email, users.full_name, users.short_name, users.password_hash, users.status, users.partner_id, users.created_at FROM users WHERE users.id = ?")
+	var __embed_stmt = __sqlbundle_Literal("SELECT users.id, users.email, users.normalized_email, users.full_name, users.short_name, users.password_hash, users.status, users.created_at, users.partner_user_agent FROM users WHERE users.id = ?")
 
 	var __values []interface{}
 	__values = append(__values, user_id.value())
@@ -7122,7 +7081,7 @@ func (obj *postgresImpl) Get_User_By_Id(ctx context.Context,
 	obj.logStmt(__stmt, __values...)
 
 	user = &User{}
-	err = obj.driver.QueryRow(__stmt, __values...).Scan(&user.Id, &user.Email, &user.NormalizedEmail, &user.FullName, &user.ShortName, &user.PasswordHash, &user.Status, &user.PartnerId, &user.CreatedAt)
+	err = obj.driver.QueryRow(__stmt, __values...).Scan(&user.Id, &user.Email, &user.NormalizedEmail, &user.FullName, &user.ShortName, &user.PasswordHash, &user.Status, &user.CreatedAt, &user.PartnerUserAgent)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
@@ -7134,7 +7093,7 @@ func (obj *postgresImpl) Get_Project_By_Id(ctx context.Context,
 	project_id Project_Id_Field) (
 	project *Project, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT projects.id, projects.name, projects.description, projects.usage_limit, projects.partner_id, projects.owner_id, projects.created_at FROM projects WHERE projects.id = ?")
+	var __embed_stmt = __sqlbundle_Literal("SELECT projects.id, projects.name, projects.description, projects.usage_limit, projects.owner_id, projects.created_at, projects.partner_user_agent FROM projects WHERE projects.id = ?")
 
 	var __values []interface{}
 	__values = append(__values, project_id.value())
@@ -7143,7 +7102,7 @@ func (obj *postgresImpl) Get_Project_By_Id(ctx context.Context,
 	obj.logStmt(__stmt, __values...)
 
 	project = &Project{}
-	err = obj.driver.QueryRow(__stmt, __values...).Scan(&project.Id, &project.Name, &project.Description, &project.UsageLimit, &project.PartnerId, &project.OwnerId, &project.CreatedAt)
+	err = obj.driver.QueryRow(__stmt, __values...).Scan(&project.Id, &project.Name, &project.Description, &project.UsageLimit, &project.OwnerId, &project.CreatedAt, &project.PartnerUserAgent)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
@@ -7154,7 +7113,7 @@ func (obj *postgresImpl) Get_Project_By_Id(ctx context.Context,
 func (obj *postgresImpl) All_Project(ctx context.Context) (
 	rows []*Project, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT projects.id, projects.name, projects.description, projects.usage_limit, projects.partner_id, projects.owner_id, projects.created_at FROM projects")
+	var __embed_stmt = __sqlbundle_Literal("SELECT projects.id, projects.name, projects.description, projects.usage_limit, projects.owner_id, projects.created_at, projects.partner_user_agent FROM projects")
 
 	var __values []interface{}
 	__values = append(__values)
@@ -7170,7 +7129,7 @@ func (obj *postgresImpl) All_Project(ctx context.Context) (
 
 	for __rows.Next() {
 		project := &Project{}
-		err = __rows.Scan(&project.Id, &project.Name, &project.Description, &project.UsageLimit, &project.PartnerId, &project.OwnerId, &project.CreatedAt)
+		err = __rows.Scan(&project.Id, &project.Name, &project.Description, &project.UsageLimit, &project.OwnerId, &project.CreatedAt, &project.PartnerUserAgent)
 		if err != nil {
 			return nil, obj.makeErr(err)
 		}
@@ -7187,7 +7146,7 @@ func (obj *postgresImpl) All_Project_By_CreatedAt_Less_OrderBy_Asc_CreatedAt(ctx
 	project_created_at_less Project_CreatedAt_Field) (
 	rows []*Project, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT projects.id, projects.name, projects.description, projects.usage_limit, projects.partner_id, projects.owner_id, projects.created_at FROM projects WHERE projects.created_at < ? ORDER BY projects.created_at")
+	var __embed_stmt = __sqlbundle_Literal("SELECT projects.id, projects.name, projects.description, projects.usage_limit, projects.owner_id, projects.created_at, projects.partner_user_agent FROM projects WHERE projects.created_at < ? ORDER BY projects.created_at")
 
 	var __values []interface{}
 	__values = append(__values, project_created_at_less.value())
@@ -7203,7 +7162,7 @@ func (obj *postgresImpl) All_Project_By_CreatedAt_Less_OrderBy_Asc_CreatedAt(ctx
 
 	for __rows.Next() {
 		project := &Project{}
-		err = __rows.Scan(&project.Id, &project.Name, &project.Description, &project.UsageLimit, &project.PartnerId, &project.OwnerId, &project.CreatedAt)
+		err = __rows.Scan(&project.Id, &project.Name, &project.Description, &project.UsageLimit, &project.OwnerId, &project.CreatedAt, &project.PartnerUserAgent)
 		if err != nil {
 			return nil, obj.makeErr(err)
 		}
@@ -7220,7 +7179,7 @@ func (obj *postgresImpl) All_Project_By_ProjectMember_MemberId_OrderBy_Asc_Proje
 	project_member_member_id ProjectMember_MemberId_Field) (
 	rows []*Project, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT projects.id, projects.name, projects.description, projects.usage_limit, projects.partner_id, projects.owner_id, projects.created_at FROM projects  JOIN project_members ON projects.id = project_members.project_id WHERE project_members.member_id = ? ORDER BY projects.name")
+	var __embed_stmt = __sqlbundle_Literal("SELECT projects.id, projects.name, projects.description, projects.usage_limit, projects.owner_id, projects.created_at, projects.partner_user_agent FROM projects  JOIN project_members ON projects.id = project_members.project_id WHERE project_members.member_id = ? ORDER BY projects.name")
 
 	var __values []interface{}
 	__values = append(__values, project_member_member_id.value())
@@ -7236,7 +7195,7 @@ func (obj *postgresImpl) All_Project_By_ProjectMember_MemberId_OrderBy_Asc_Proje
 
 	for __rows.Next() {
 		project := &Project{}
-		err = __rows.Scan(&project.Id, &project.Name, &project.Description, &project.UsageLimit, &project.PartnerId, &project.OwnerId, &project.CreatedAt)
+		err = __rows.Scan(&project.Id, &project.Name, &project.Description, &project.UsageLimit, &project.OwnerId, &project.CreatedAt, &project.PartnerUserAgent)
 		if err != nil {
 			return nil, obj.makeErr(err)
 		}
@@ -7254,7 +7213,7 @@ func (obj *postgresImpl) Limited_Project_By_CreatedAt_Less_OrderBy_Asc_CreatedAt
 	limit int, offset int64) (
 	rows []*Project, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT projects.id, projects.name, projects.description, projects.usage_limit, projects.partner_id, projects.owner_id, projects.created_at FROM projects WHERE projects.created_at < ? ORDER BY projects.created_at LIMIT ? OFFSET ?")
+	var __embed_stmt = __sqlbundle_Literal("SELECT projects.id, projects.name, projects.description, projects.usage_limit, projects.owner_id, projects.created_at, projects.partner_user_agent FROM projects WHERE projects.created_at < ? ORDER BY projects.created_at LIMIT ? OFFSET ?")
 
 	var __values []interface{}
 	__values = append(__values, project_created_at_less.value())
@@ -7272,7 +7231,7 @@ func (obj *postgresImpl) Limited_Project_By_CreatedAt_Less_OrderBy_Asc_CreatedAt
 
 	for __rows.Next() {
 		project := &Project{}
-		err = __rows.Scan(&project.Id, &project.Name, &project.Description, &project.UsageLimit, &project.PartnerId, &project.OwnerId, &project.CreatedAt)
+		err = __rows.Scan(&project.Id, &project.Name, &project.Description, &project.UsageLimit, &project.OwnerId, &project.CreatedAt, &project.PartnerUserAgent)
 		if err != nil {
 			return nil, obj.makeErr(err)
 		}
@@ -7435,7 +7394,7 @@ func (obj *postgresImpl) Get_ApiKey_By_Id(ctx context.Context,
 	api_key_id ApiKey_Id_Field) (
 	api_key *ApiKey, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT api_keys.id, api_keys.project_id, api_keys.head, api_keys.name, api_keys.secret, api_keys.partner_id, api_keys.created_at FROM api_keys WHERE api_keys.id = ?")
+	var __embed_stmt = __sqlbundle_Literal("SELECT api_keys.id, api_keys.project_id, api_keys.head, api_keys.name, api_keys.secret, api_keys.created_at, api_keys.partner_user_agent FROM api_keys WHERE api_keys.id = ?")
 
 	var __values []interface{}
 	__values = append(__values, api_key_id.value())
@@ -7444,7 +7403,7 @@ func (obj *postgresImpl) Get_ApiKey_By_Id(ctx context.Context,
 	obj.logStmt(__stmt, __values...)
 
 	api_key = &ApiKey{}
-	err = obj.driver.QueryRow(__stmt, __values...).Scan(&api_key.Id, &api_key.ProjectId, &api_key.Head, &api_key.Name, &api_key.Secret, &api_key.PartnerId, &api_key.CreatedAt)
+	err = obj.driver.QueryRow(__stmt, __values...).Scan(&api_key.Id, &api_key.ProjectId, &api_key.Head, &api_key.Name, &api_key.Secret, &api_key.CreatedAt, &api_key.PartnerUserAgent)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
@@ -7456,7 +7415,7 @@ func (obj *postgresImpl) Get_ApiKey_By_Head(ctx context.Context,
 	api_key_head ApiKey_Head_Field) (
 	api_key *ApiKey, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT api_keys.id, api_keys.project_id, api_keys.head, api_keys.name, api_keys.secret, api_keys.partner_id, api_keys.created_at FROM api_keys WHERE api_keys.head = ?")
+	var __embed_stmt = __sqlbundle_Literal("SELECT api_keys.id, api_keys.project_id, api_keys.head, api_keys.name, api_keys.secret, api_keys.created_at, api_keys.partner_user_agent FROM api_keys WHERE api_keys.head = ?")
 
 	var __values []interface{}
 	__values = append(__values, api_key_head.value())
@@ -7465,7 +7424,7 @@ func (obj *postgresImpl) Get_ApiKey_By_Head(ctx context.Context,
 	obj.logStmt(__stmt, __values...)
 
 	api_key = &ApiKey{}
-	err = obj.driver.QueryRow(__stmt, __values...).Scan(&api_key.Id, &api_key.ProjectId, &api_key.Head, &api_key.Name, &api_key.Secret, &api_key.PartnerId, &api_key.CreatedAt)
+	err = obj.driver.QueryRow(__stmt, __values...).Scan(&api_key.Id, &api_key.ProjectId, &api_key.Head, &api_key.Name, &api_key.Secret, &api_key.CreatedAt, &api_key.PartnerUserAgent)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
@@ -7478,7 +7437,7 @@ func (obj *postgresImpl) Get_ApiKey_By_Name_And_ProjectId(ctx context.Context,
 	api_key_project_id ApiKey_ProjectId_Field) (
 	api_key *ApiKey, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT api_keys.id, api_keys.project_id, api_keys.head, api_keys.name, api_keys.secret, api_keys.partner_id, api_keys.created_at FROM api_keys WHERE api_keys.name = ? AND api_keys.project_id = ?")
+	var __embed_stmt = __sqlbundle_Literal("SELECT api_keys.id, api_keys.project_id, api_keys.head, api_keys.name, api_keys.secret, api_keys.created_at, api_keys.partner_user_agent FROM api_keys WHERE api_keys.name = ? AND api_keys.project_id = ?")
 
 	var __values []interface{}
 	__values = append(__values, api_key_name.value(), api_key_project_id.value())
@@ -7487,7 +7446,7 @@ func (obj *postgresImpl) Get_ApiKey_By_Name_And_ProjectId(ctx context.Context,
 	obj.logStmt(__stmt, __values...)
 
 	api_key = &ApiKey{}
-	err = obj.driver.QueryRow(__stmt, __values...).Scan(&api_key.Id, &api_key.ProjectId, &api_key.Head, &api_key.Name, &api_key.Secret, &api_key.PartnerId, &api_key.CreatedAt)
+	err = obj.driver.QueryRow(__stmt, __values...).Scan(&api_key.Id, &api_key.ProjectId, &api_key.Head, &api_key.Name, &api_key.Secret, &api_key.CreatedAt, &api_key.PartnerUserAgent)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
@@ -7499,7 +7458,7 @@ func (obj *postgresImpl) All_ApiKey_By_ProjectId_OrderBy_Asc_Name(ctx context.Co
 	api_key_project_id ApiKey_ProjectId_Field) (
 	rows []*ApiKey, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT api_keys.id, api_keys.project_id, api_keys.head, api_keys.name, api_keys.secret, api_keys.partner_id, api_keys.created_at FROM api_keys WHERE api_keys.project_id = ? ORDER BY api_keys.name")
+	var __embed_stmt = __sqlbundle_Literal("SELECT api_keys.id, api_keys.project_id, api_keys.head, api_keys.name, api_keys.secret, api_keys.created_at, api_keys.partner_user_agent FROM api_keys WHERE api_keys.project_id = ? ORDER BY api_keys.name")
 
 	var __values []interface{}
 	__values = append(__values, api_key_project_id.value())
@@ -7515,7 +7474,7 @@ func (obj *postgresImpl) All_ApiKey_By_ProjectId_OrderBy_Asc_Name(ctx context.Co
 
 	for __rows.Next() {
 		api_key := &ApiKey{}
-		err = __rows.Scan(&api_key.Id, &api_key.ProjectId, &api_key.Head, &api_key.Name, &api_key.Secret, &api_key.PartnerId, &api_key.CreatedAt)
+		err = __rows.Scan(&api_key.Id, &api_key.ProjectId, &api_key.Head, &api_key.Name, &api_key.Secret, &api_key.CreatedAt, &api_key.PartnerUserAgent)
 		if err != nil {
 			return nil, obj.makeErr(err)
 		}
@@ -8099,7 +8058,7 @@ func (obj *postgresImpl) Get_BucketMetainfo_By_ProjectId_And_Name(ctx context.Co
 	bucket_metainfo_name BucketMetainfo_Name_Field) (
 	bucket_metainfo *BucketMetainfo, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT bucket_metainfos.id, bucket_metainfos.project_id, bucket_metainfos.name, bucket_metainfos.partner_id, bucket_metainfos.path_cipher, bucket_metainfos.created_at, bucket_metainfos.default_segment_size, bucket_metainfos.default_encryption_cipher_suite, bucket_metainfos.default_encryption_block_size, bucket_metainfos.default_redundancy_algorithm, bucket_metainfos.default_redundancy_share_size, bucket_metainfos.default_redundancy_required_shares, bucket_metainfos.default_redundancy_repair_shares, bucket_metainfos.default_redundancy_optimal_shares, bucket_metainfos.default_redundancy_total_shares FROM bucket_metainfos WHERE bucket_metainfos.project_id = ? AND bucket_metainfos.name = ?")
+	var __embed_stmt = __sqlbundle_Literal("SELECT bucket_metainfos.id, bucket_metainfos.project_id, bucket_metainfos.name, bucket_metainfos.path_cipher, bucket_metainfos.created_at, bucket_metainfos.default_segment_size, bucket_metainfos.default_encryption_cipher_suite, bucket_metainfos.default_encryption_block_size, bucket_metainfos.default_redundancy_algorithm, bucket_metainfos.default_redundancy_share_size, bucket_metainfos.default_redundancy_required_shares, bucket_metainfos.default_redundancy_repair_shares, bucket_metainfos.default_redundancy_optimal_shares, bucket_metainfos.default_redundancy_total_shares FROM bucket_metainfos WHERE bucket_metainfos.project_id = ? AND bucket_metainfos.name = ?")
 
 	var __values []interface{}
 	__values = append(__values, bucket_metainfo_project_id.value(), bucket_metainfo_name.value())
@@ -8108,7 +8067,7 @@ func (obj *postgresImpl) Get_BucketMetainfo_By_ProjectId_And_Name(ctx context.Co
 	obj.logStmt(__stmt, __values...)
 
 	bucket_metainfo = &BucketMetainfo{}
-	err = obj.driver.QueryRow(__stmt, __values...).Scan(&bucket_metainfo.Id, &bucket_metainfo.ProjectId, &bucket_metainfo.Name, &bucket_metainfo.PartnerId, &bucket_metainfo.PathCipher, &bucket_metainfo.CreatedAt, &bucket_metainfo.DefaultSegmentSize, &bucket_metainfo.DefaultEncryptionCipherSuite, &bucket_metainfo.DefaultEncryptionBlockSize, &bucket_metainfo.DefaultRedundancyAlgorithm, &bucket_metainfo.DefaultRedundancyShareSize, &bucket_metainfo.DefaultRedundancyRequiredShares, &bucket_metainfo.DefaultRedundancyRepairShares, &bucket_metainfo.DefaultRedundancyOptimalShares, &bucket_metainfo.DefaultRedundancyTotalShares)
+	err = obj.driver.QueryRow(__stmt, __values...).Scan(&bucket_metainfo.Id, &bucket_metainfo.ProjectId, &bucket_metainfo.Name, &bucket_metainfo.PathCipher, &bucket_metainfo.CreatedAt, &bucket_metainfo.DefaultSegmentSize, &bucket_metainfo.DefaultEncryptionCipherSuite, &bucket_metainfo.DefaultEncryptionBlockSize, &bucket_metainfo.DefaultRedundancyAlgorithm, &bucket_metainfo.DefaultRedundancyShareSize, &bucket_metainfo.DefaultRedundancyRequiredShares, &bucket_metainfo.DefaultRedundancyRepairShares, &bucket_metainfo.DefaultRedundancyOptimalShares, &bucket_metainfo.DefaultRedundancyTotalShares)
 	if err != nil {
 		return nil, obj.makeErr(err)
 	}
@@ -8122,7 +8081,7 @@ func (obj *postgresImpl) Limited_BucketMetainfo_By_ProjectId_And_Name_GreaterOrE
 	limit int, offset int64) (
 	rows []*BucketMetainfo, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT bucket_metainfos.id, bucket_metainfos.project_id, bucket_metainfos.name, bucket_metainfos.partner_id, bucket_metainfos.path_cipher, bucket_metainfos.created_at, bucket_metainfos.default_segment_size, bucket_metainfos.default_encryption_cipher_suite, bucket_metainfos.default_encryption_block_size, bucket_metainfos.default_redundancy_algorithm, bucket_metainfos.default_redundancy_share_size, bucket_metainfos.default_redundancy_required_shares, bucket_metainfos.default_redundancy_repair_shares, bucket_metainfos.default_redundancy_optimal_shares, bucket_metainfos.default_redundancy_total_shares FROM bucket_metainfos WHERE bucket_metainfos.project_id = ? AND bucket_metainfos.name >= ? ORDER BY bucket_metainfos.name LIMIT ? OFFSET ?")
+	var __embed_stmt = __sqlbundle_Literal("SELECT bucket_metainfos.id, bucket_metainfos.project_id, bucket_metainfos.name, bucket_metainfos.path_cipher, bucket_metainfos.created_at, bucket_metainfos.default_segment_size, bucket_metainfos.default_encryption_cipher_suite, bucket_metainfos.default_encryption_block_size, bucket_metainfos.default_redundancy_algorithm, bucket_metainfos.default_redundancy_share_size, bucket_metainfos.default_redundancy_required_shares, bucket_metainfos.default_redundancy_repair_shares, bucket_metainfos.default_redundancy_optimal_shares, bucket_metainfos.default_redundancy_total_shares FROM bucket_metainfos WHERE bucket_metainfos.project_id = ? AND bucket_metainfos.name >= ? ORDER BY bucket_metainfos.name LIMIT ? OFFSET ?")
 
 	var __values []interface{}
 	__values = append(__values, bucket_metainfo_project_id.value(), bucket_metainfo_name_greater_or_equal.value())
@@ -8140,7 +8099,7 @@ func (obj *postgresImpl) Limited_BucketMetainfo_By_ProjectId_And_Name_GreaterOrE
 
 	for __rows.Next() {
 		bucket_metainfo := &BucketMetainfo{}
-		err = __rows.Scan(&bucket_metainfo.Id, &bucket_metainfo.ProjectId, &bucket_metainfo.Name, &bucket_metainfo.PartnerId, &bucket_metainfo.PathCipher, &bucket_metainfo.CreatedAt, &bucket_metainfo.DefaultSegmentSize, &bucket_metainfo.DefaultEncryptionCipherSuite, &bucket_metainfo.DefaultEncryptionBlockSize, &bucket_metainfo.DefaultRedundancyAlgorithm, &bucket_metainfo.DefaultRedundancyShareSize, &bucket_metainfo.DefaultRedundancyRequiredShares, &bucket_metainfo.DefaultRedundancyRepairShares, &bucket_metainfo.DefaultRedundancyOptimalShares, &bucket_metainfo.DefaultRedundancyTotalShares)
+		err = __rows.Scan(&bucket_metainfo.Id, &bucket_metainfo.ProjectId, &bucket_metainfo.Name, &bucket_metainfo.PathCipher, &bucket_metainfo.CreatedAt, &bucket_metainfo.DefaultSegmentSize, &bucket_metainfo.DefaultEncryptionCipherSuite, &bucket_metainfo.DefaultEncryptionBlockSize, &bucket_metainfo.DefaultRedundancyAlgorithm, &bucket_metainfo.DefaultRedundancyShareSize, &bucket_metainfo.DefaultRedundancyRequiredShares, &bucket_metainfo.DefaultRedundancyRepairShares, &bucket_metainfo.DefaultRedundancyOptimalShares, &bucket_metainfo.DefaultRedundancyTotalShares)
 		if err != nil {
 			return nil, obj.makeErr(err)
 		}
@@ -8159,7 +8118,7 @@ func (obj *postgresImpl) Limited_BucketMetainfo_By_ProjectId_And_Name_Greater_Or
 	limit int, offset int64) (
 	rows []*BucketMetainfo, err error) {
 
-	var __embed_stmt = __sqlbundle_Literal("SELECT bucket_metainfos.id, bucket_metainfos.project_id, bucket_metainfos.name, bucket_metainfos.partner_id, bucket_metainfos.path_cipher, bucket_metainfos.created_at, bucket_metainfos.default_segment_size, bucket_metainfos.default_encryption_cipher_suite, bucket_metainfos.default_encryption_block_size, bucket_metainfos.default_redundancy_algorithm, bucket_metainfos.default_redundancy_share_size, bucket_metainfos.default_redundancy_required_shares, bucket_metainfos.default_redundancy_repair_shares, bucket_metainfos.default_redundancy_optimal_shares, bucket_metainfos.default_redundancy_total_shares FROM bucket_metainfos WHERE bucket_metainfos.project_id = ? AND bucket_metainfos.name > ? ORDER BY bucket_metainfos.name LIMIT ? OFFSET ?")
+	var __embed_stmt = __sqlbundle_Literal("SELECT bucket_metainfos.id, bucket_metainfos.project_id, bucket_metainfos.name, bucket_metainfos.path_cipher, bucket_metainfos.created_at, bucket_metainfos.default_segment_size, bucket_metainfos.default_encryption_cipher_suite, bucket_metainfos.default_encryption_block_size, bucket_metainfos.default_redundancy_algorithm, bucket_metainfos.default_redundancy_share_size, bucket_metainfos.default_redundancy_required_shares, bucket_metainfos.default_redundancy_repair_shares, bucket_metainfos.default_redundancy_optimal_shares, bucket_metainfos.default_redundancy_total_shares FROM bucket_metainfos WHERE bucket_metainfos.project_id = ? AND bucket_metainfos.name > ? ORDER BY bucket_metainfos.name LIMIT ? OFFSET ?")
 
 	var __values []interface{}
 	__values = append(__values, bucket_metainfo_project_id.value(), bucket_metainfo_name_greater.value())
@@ -8177,7 +8136,7 @@ func (obj *postgresImpl) Limited_BucketMetainfo_By_ProjectId_And_Name_Greater_Or
 
 	for __rows.Next() {
 		bucket_metainfo := &BucketMetainfo{}
-		err = __rows.Scan(&bucket_metainfo.Id, &bucket_metainfo.ProjectId, &bucket_metainfo.Name, &bucket_metainfo.PartnerId, &bucket_metainfo.PathCipher, &bucket_metainfo.CreatedAt, &bucket_metainfo.DefaultSegmentSize, &bucket_metainfo.DefaultEncryptionCipherSuite, &bucket_metainfo.DefaultEncryptionBlockSize, &bucket_metainfo.DefaultRedundancyAlgorithm, &bucket_metainfo.DefaultRedundancyShareSize, &bucket_metainfo.DefaultRedundancyRequiredShares, &bucket_metainfo.DefaultRedundancyRepairShares, &bucket_metainfo.DefaultRedundancyOptimalShares, &bucket_metainfo.DefaultRedundancyTotalShares)
+		err = __rows.Scan(&bucket_metainfo.Id, &bucket_metainfo.ProjectId, &bucket_metainfo.Name, &bucket_metainfo.PathCipher, &bucket_metainfo.CreatedAt, &bucket_metainfo.DefaultSegmentSize, &bucket_metainfo.DefaultEncryptionCipherSuite, &bucket_metainfo.DefaultEncryptionBlockSize, &bucket_metainfo.DefaultRedundancyAlgorithm, &bucket_metainfo.DefaultRedundancyShareSize, &bucket_metainfo.DefaultRedundancyRequiredShares, &bucket_metainfo.DefaultRedundancyRepairShares, &bucket_metainfo.DefaultRedundancyOptimalShares, &bucket_metainfo.DefaultRedundancyTotalShares)
 		if err != nil {
 			return nil, obj.makeErr(err)
 		}
@@ -8909,7 +8868,7 @@ func (obj *postgresImpl) Update_User_By_Id(ctx context.Context,
 	user *User, err error) {
 	var __sets = &__sqlbundle_Hole{}
 
-	var __embed_stmt = __sqlbundle_Literals{Join: "", SQLs: []__sqlbundle_SQL{__sqlbundle_Literal("UPDATE users SET "), __sets, __sqlbundle_Literal(" WHERE users.id = ? RETURNING users.id, users.email, users.normalized_email, users.full_name, users.short_name, users.password_hash, users.status, users.partner_id, users.created_at")}}
+	var __embed_stmt = __sqlbundle_Literals{Join: "", SQLs: []__sqlbundle_SQL{__sqlbundle_Literal("UPDATE users SET "), __sets, __sqlbundle_Literal(" WHERE users.id = ? RETURNING users.id, users.email, users.normalized_email, users.full_name, users.short_name, users.password_hash, users.status, users.created_at, users.partner_user_agent")}}
 
 	__sets_sql := __sqlbundle_Literals{Join: ", "}
 	var __values []interface{}
@@ -8958,7 +8917,7 @@ func (obj *postgresImpl) Update_User_By_Id(ctx context.Context,
 	obj.logStmt(__stmt, __values...)
 
 	user = &User{}
-	err = obj.driver.QueryRow(__stmt, __values...).Scan(&user.Id, &user.Email, &user.NormalizedEmail, &user.FullName, &user.ShortName, &user.PasswordHash, &user.Status, &user.PartnerId, &user.CreatedAt)
+	err = obj.driver.QueryRow(__stmt, __values...).Scan(&user.Id, &user.Email, &user.NormalizedEmail, &user.FullName, &user.ShortName, &user.PasswordHash, &user.Status, &user.CreatedAt, &user.PartnerUserAgent)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -8974,7 +8933,7 @@ func (obj *postgresImpl) Update_Project_By_Id(ctx context.Context,
 	project *Project, err error) {
 	var __sets = &__sqlbundle_Hole{}
 
-	var __embed_stmt = __sqlbundle_Literals{Join: "", SQLs: []__sqlbundle_SQL{__sqlbundle_Literal("UPDATE projects SET "), __sets, __sqlbundle_Literal(" WHERE projects.id = ? RETURNING projects.id, projects.name, projects.description, projects.usage_limit, projects.partner_id, projects.owner_id, projects.created_at")}}
+	var __embed_stmt = __sqlbundle_Literals{Join: "", SQLs: []__sqlbundle_SQL{__sqlbundle_Literal("UPDATE projects SET "), __sets, __sqlbundle_Literal(" WHERE projects.id = ? RETURNING projects.id, projects.name, projects.description, projects.usage_limit, projects.owner_id, projects.created_at, projects.partner_user_agent")}}
 
 	__sets_sql := __sqlbundle_Literals{Join: ", "}
 	var __values []interface{}
@@ -9003,7 +8962,7 @@ func (obj *postgresImpl) Update_Project_By_Id(ctx context.Context,
 	obj.logStmt(__stmt, __values...)
 
 	project = &Project{}
-	err = obj.driver.QueryRow(__stmt, __values...).Scan(&project.Id, &project.Name, &project.Description, &project.UsageLimit, &project.PartnerId, &project.OwnerId, &project.CreatedAt)
+	err = obj.driver.QueryRow(__stmt, __values...).Scan(&project.Id, &project.Name, &project.Description, &project.UsageLimit, &project.OwnerId, &project.CreatedAt, &project.PartnerUserAgent)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -9219,16 +9178,11 @@ func (obj *postgresImpl) Update_BucketMetainfo_By_ProjectId_And_Name(ctx context
 	bucket_metainfo *BucketMetainfo, err error) {
 	var __sets = &__sqlbundle_Hole{}
 
-	var __embed_stmt = __sqlbundle_Literals{Join: "", SQLs: []__sqlbundle_SQL{__sqlbundle_Literal("UPDATE bucket_metainfos SET "), __sets, __sqlbundle_Literal(" WHERE bucket_metainfos.project_id = ? AND bucket_metainfos.name = ? RETURNING bucket_metainfos.id, bucket_metainfos.project_id, bucket_metainfos.name, bucket_metainfos.partner_id, bucket_metainfos.path_cipher, bucket_metainfos.created_at, bucket_metainfos.default_segment_size, bucket_metainfos.default_encryption_cipher_suite, bucket_metainfos.default_encryption_block_size, bucket_metainfos.default_redundancy_algorithm, bucket_metainfos.default_redundancy_share_size, bucket_metainfos.default_redundancy_required_shares, bucket_metainfos.default_redundancy_repair_shares, bucket_metainfos.default_redundancy_optimal_shares, bucket_metainfos.default_redundancy_total_shares")}}
+	var __embed_stmt = __sqlbundle_Literals{Join: "", SQLs: []__sqlbundle_SQL{__sqlbundle_Literal("UPDATE bucket_metainfos SET "), __sets, __sqlbundle_Literal(" WHERE bucket_metainfos.project_id = ? AND bucket_metainfos.name = ? RETURNING bucket_metainfos.id, bucket_metainfos.project_id, bucket_metainfos.name, bucket_metainfos.path_cipher, bucket_metainfos.created_at, bucket_metainfos.default_segment_size, bucket_metainfos.default_encryption_cipher_suite, bucket_metainfos.default_encryption_block_size, bucket_metainfos.default_redundancy_algorithm, bucket_metainfos.default_redundancy_share_size, bucket_metainfos.default_redundancy_required_shares, bucket_metainfos.default_redundancy_repair_shares, bucket_metainfos.default_redundancy_optimal_shares, bucket_metainfos.default_redundancy_total_shares")}}
 
 	__sets_sql := __sqlbundle_Literals{Join: ", "}
 	var __values []interface{}
 	var __args []interface{}
-
-	if update.PartnerId._set {
-		__values = append(__values, update.PartnerId.value())
-		__sets_sql.SQLs = append(__sets_sql.SQLs, __sqlbundle_Literal("partner_id = ?"))
-	}
 
 	if update.DefaultSegmentSize._set {
 		__values = append(__values, update.DefaultSegmentSize.value())
@@ -9288,7 +9242,7 @@ func (obj *postgresImpl) Update_BucketMetainfo_By_ProjectId_And_Name(ctx context
 	obj.logStmt(__stmt, __values...)
 
 	bucket_metainfo = &BucketMetainfo{}
-	err = obj.driver.QueryRow(__stmt, __values...).Scan(&bucket_metainfo.Id, &bucket_metainfo.ProjectId, &bucket_metainfo.Name, &bucket_metainfo.PartnerId, &bucket_metainfo.PathCipher, &bucket_metainfo.CreatedAt, &bucket_metainfo.DefaultSegmentSize, &bucket_metainfo.DefaultEncryptionCipherSuite, &bucket_metainfo.DefaultEncryptionBlockSize, &bucket_metainfo.DefaultRedundancyAlgorithm, &bucket_metainfo.DefaultRedundancyShareSize, &bucket_metainfo.DefaultRedundancyRequiredShares, &bucket_metainfo.DefaultRedundancyRepairShares, &bucket_metainfo.DefaultRedundancyOptimalShares, &bucket_metainfo.DefaultRedundancyTotalShares)
+	err = obj.driver.QueryRow(__stmt, __values...).Scan(&bucket_metainfo.Id, &bucket_metainfo.ProjectId, &bucket_metainfo.Name, &bucket_metainfo.PathCipher, &bucket_metainfo.CreatedAt, &bucket_metainfo.DefaultSegmentSize, &bucket_metainfo.DefaultEncryptionCipherSuite, &bucket_metainfo.DefaultEncryptionBlockSize, &bucket_metainfo.DefaultRedundancyAlgorithm, &bucket_metainfo.DefaultRedundancyShareSize, &bucket_metainfo.DefaultRedundancyRequiredShares, &bucket_metainfo.DefaultRedundancyRepairShares, &bucket_metainfo.DefaultRedundancyOptimalShares, &bucket_metainfo.DefaultRedundancyTotalShares)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -10770,14 +10724,13 @@ func (rx *Rx) Create_BucketMetainfo(ctx context.Context,
 	bucket_metainfo_default_redundancy_required_shares BucketMetainfo_DefaultRedundancyRequiredShares_Field,
 	bucket_metainfo_default_redundancy_repair_shares BucketMetainfo_DefaultRedundancyRepairShares_Field,
 	bucket_metainfo_default_redundancy_optimal_shares BucketMetainfo_DefaultRedundancyOptimalShares_Field,
-	bucket_metainfo_default_redundancy_total_shares BucketMetainfo_DefaultRedundancyTotalShares_Field,
-	optional BucketMetainfo_Create_Fields) (
+	bucket_metainfo_default_redundancy_total_shares BucketMetainfo_DefaultRedundancyTotalShares_Field) (
 	bucket_metainfo *BucketMetainfo, err error) {
 	var tx *Tx
 	if tx, err = rx.getTx(ctx); err != nil {
 		return
 	}
-	return tx.Create_BucketMetainfo(ctx, bucket_metainfo_id, bucket_metainfo_project_id, bucket_metainfo_name, bucket_metainfo_path_cipher, bucket_metainfo_default_segment_size, bucket_metainfo_default_encryption_cipher_suite, bucket_metainfo_default_encryption_block_size, bucket_metainfo_default_redundancy_algorithm, bucket_metainfo_default_redundancy_share_size, bucket_metainfo_default_redundancy_required_shares, bucket_metainfo_default_redundancy_repair_shares, bucket_metainfo_default_redundancy_optimal_shares, bucket_metainfo_default_redundancy_total_shares, optional)
+	return tx.Create_BucketMetainfo(ctx, bucket_metainfo_id, bucket_metainfo_project_id, bucket_metainfo_name, bucket_metainfo_path_cipher, bucket_metainfo_default_segment_size, bucket_metainfo_default_encryption_cipher_suite, bucket_metainfo_default_encryption_block_size, bucket_metainfo_default_redundancy_algorithm, bucket_metainfo_default_redundancy_share_size, bucket_metainfo_default_redundancy_required_shares, bucket_metainfo_default_redundancy_repair_shares, bucket_metainfo_default_redundancy_optimal_shares, bucket_metainfo_default_redundancy_total_shares)
 
 }
 
@@ -10978,13 +10931,13 @@ func (rx *Rx) Create_UserCredit(ctx context.Context,
 func (rx *Rx) Create_ValueAttribution(ctx context.Context,
 	value_attribution_project_id ValueAttribution_ProjectId_Field,
 	value_attribution_bucket_name ValueAttribution_BucketName_Field,
-	value_attribution_partner_id ValueAttribution_PartnerId_Field) (
+	value_attribution_partner_user_agent ValueAttribution_PartnerUserAgent_Field) (
 	value_attribution *ValueAttribution, err error) {
 	var tx *Tx
 	if tx, err = rx.getTx(ctx); err != nil {
 		return
 	}
-	return tx.Create_ValueAttribution(ctx, value_attribution_project_id, value_attribution_bucket_name, value_attribution_partner_id)
+	return tx.Create_ValueAttribution(ctx, value_attribution_project_id, value_attribution_bucket_name, value_attribution_partner_user_agent)
 
 }
 
@@ -11996,8 +11949,7 @@ type Methods interface {
 		bucket_metainfo_default_redundancy_required_shares BucketMetainfo_DefaultRedundancyRequiredShares_Field,
 		bucket_metainfo_default_redundancy_repair_shares BucketMetainfo_DefaultRedundancyRepairShares_Field,
 		bucket_metainfo_default_redundancy_optimal_shares BucketMetainfo_DefaultRedundancyOptimalShares_Field,
-		bucket_metainfo_default_redundancy_total_shares BucketMetainfo_DefaultRedundancyTotalShares_Field,
-		optional BucketMetainfo_Create_Fields) (
+		bucket_metainfo_default_redundancy_total_shares BucketMetainfo_DefaultRedundancyTotalShares_Field) (
 		bucket_metainfo *BucketMetainfo, err error)
 
 	Create_CoinpaymentsTransaction(ctx context.Context,
@@ -12106,7 +12058,7 @@ type Methods interface {
 	Create_ValueAttribution(ctx context.Context,
 		value_attribution_project_id ValueAttribution_ProjectId_Field,
 		value_attribution_bucket_name ValueAttribution_BucketName_Field,
-		value_attribution_partner_id ValueAttribution_PartnerId_Field) (
+		value_attribution_partner_user_agent ValueAttribution_PartnerUserAgent_Field) (
 		value_attribution *ValueAttribution, err error)
 
 	Delete_AccountingRollup_By_Id(ctx context.Context,
