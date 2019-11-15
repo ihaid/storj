@@ -15,6 +15,7 @@ import (
 	"log"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/zeebo/errs"
 
@@ -92,6 +93,7 @@ func NewCA(ctx context.Context, opts NewCAOptions) (_ *FullCertificateAuthority,
 	var (
 		highscore = new(uint32)
 		i         = new(uint32)
+		j         = new(uint32)
 
 		mu          sync.Mutex
 		selectedKey crypto.PrivateKey
@@ -112,21 +114,35 @@ func NewCA(ctx context.Context, opts NewCAOptions) (_ *FullCertificateAuthority,
 	}
 
 	updateStatus := func() {
-		if opts.Logger != nil {
-			count := atomic.LoadUint32(i)
-			hs := atomic.LoadUint32(highscore)
-			_, err := fmt.Fprintf(opts.Logger, "\rGenerated %d keys; best difficulty so far: %d", count, hs)
-			if err != nil {
-				log.Print(errs.Wrap(err))
-			}
+		if opts.Logger == nil {
+			return
+		}
+		count := atomic.LoadUint32(i)
+		prevcount := atomic.LoadUint32(j)
+		hs := atomic.LoadUint32(highscore)
+		atomic.StoreUint32(j, count)
+		rate := (count - prevcount)
+
+		_, err := fmt.Fprintf(opts.Logger, "\rGenerated %10d keys, %7d/s; best difficulty so far: %d", count, rate*4, hs)
+		if err != nil {
+			log.Print(errs.Wrap(err))
 		}
 	}
+
+	ticker := time.NewTicker(time.Millisecond * 250)
+	defer ticker.Stop()
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				updateStatus()
+			}
+		}
+	}()
 	err = GenerateKeys(ctx, minimumLoggableDifficulty, int(opts.Concurrency), version,
 		func(k crypto.PrivateKey, id storj.NodeID) (done bool, err error) {
 			if opts.Logger != nil {
-				if atomic.AddUint32(i, 1)%100 == 0 {
-					updateStatus()
-				}
+				atomic.AddUint32(i, 1)
 			}
 
 			difficulty, err := id.Difficulty()
